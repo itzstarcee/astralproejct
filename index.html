@@ -233,7 +233,7 @@
       display: block;
     }
 
-    /* Botón de eliminar mensaje propio (NUEVO) */
+    /* Botón de eliminar mensaje propio */
     .delete-message-btn {
         background: none;
         border: none;
@@ -277,6 +277,10 @@
       font-size: 14px;
       display: flex;
       align-items: center;
+      transition: background-color 0.2s;
+    }
+    .input-area label:hover {
+        background-color: #4a54c9;
     }
     .input-area label svg {
         margin-right: 5px;
@@ -296,6 +300,42 @@
       max-width: 100%;
       margin-top: 8px;
       border-radius: 6px;
+    }
+
+    /* ------------------------------ */
+    /* NUEVOS ESTILOS PARA BOTÓN ENVIAR */
+    /* ------------------------------ */
+    .input-area .send-button {
+      /* Estilos base */
+      padding: 10px 15px;
+      border: none;
+      border-radius: 6px;
+      background-color: #43b581; /* Verde Discord para enviar */
+      color: white;
+      font-weight: bold;
+      cursor: pointer;
+      transition: background-color 0.2s ease, box-shadow 0.2s ease, transform 0.1s;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 5px;
+      flex-shrink: 0; /* Evita que el botón se comprima */
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+    }
+
+    .input-area .send-button:hover {
+      background-color: #3aa876; /* Tono más oscuro al pasar el ratón */
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+    }
+    
+    .input-area .send-button:active {
+        transform: scale(0.98);
+    }
+    
+    .input-area .send-button:disabled {
+        background-color: #5d7e6f;
+        cursor: not-allowed;
+        box-shadow: none;
     }
 
     /* ------------------------------ */
@@ -447,7 +487,12 @@
         Imagen
     </label>
       <input type="file" id="imageInput" accept="image/*" />
-      <button onclick="sendMessage()">Enviar</button>
+      <!-- BOTÓN DE ENVIAR ACTUALIZADO CON ICONO -->
+      <button onclick="sendMessage()" class="send-button">
+          <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="22" y1="2" x2="11" y2="13"></line><polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
+          </svg>
+      </button>
     </div>
   </div>
 
@@ -907,7 +952,9 @@
             deleteButton.title = 'Eliminar este mensaje';
             deleteButton.innerHTML = `
                 <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                    <path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/>
+                    <path d="M3 6h18"/>
+                    <path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/>
+                    <path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/>
                 </svg>
             `;
             deleteButton.onclick = () => deleteOwnMessage(msg.id);
@@ -955,7 +1002,8 @@
       const text = textInput.value.trim();
       const imageFile = imageInput.files[0];
       
-      const sendButton = document.querySelector('.input-area button');
+      // Se utiliza la nueva clase 'send-button'
+      const sendButton = document.querySelector('.input-area .send-button');
 
       if (!text && !imageFile) return;
       if (!currentDM) {
@@ -1035,6 +1083,15 @@
         updateDMList();
         checkResponsiveLayout();
         window.addEventListener('resize', checkResponsiveLayout);
+        
+        // Asocia el evento 'Enter' al input de mensaje para enviar
+        document.getElementById('messageInput').addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                e.preventDefault(); // Previene salto de línea
+                sendMessage();
+            }
+        });
+        
     } catch (e) {
         console.error("❌ ERROR CRÍTICO DE INICIALIZACIÓN DE FIREBASE.", e);
         document.getElementById('messages').innerHTML = '<div style="color: red; padding: 20px;">ERROR CRÍTICO: No se pudo conectar a Firebase. Revisa la consola (F12).</div>';
