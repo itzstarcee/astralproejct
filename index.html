@@ -29,26 +29,17 @@
         flex: 1;
     }
 
-    /* BARRA DE CANALES/CONTACTOS (Diseño de Escritorio) */
+    /* BARRA DE CANALES/CONTACTOS */
     .sidebar {
       width: 260px;
       flex-shrink: 0;
       background-color: #202225;
-      padding: 0 15px 15px 15px; /* Ajuste para mover el padding al contenedor de contenido */
+      padding: 15px;
       box-sizing: border-box;
       display: flex;
       flex-direction: column;
       border-right: 1px solid #2f3136; 
       transition: transform 0.3s ease; /* Para animación móvil */
-    }
-
-    /* Contenido de la barra lateral (excluyendo el header y el footer) */
-    .sidebar-content {
-        flex-grow: 1;
-        overflow-y: hidden;
-        display: flex;
-        flex-direction: column;
-        padding-top: 15px;
     }
 
     /* HEADER del Sidebar */
@@ -60,12 +51,35 @@
       font-weight: 800;
       letter-spacing: -0.5px;
       border-bottom: 2px solid #2b2d31;
-      padding: 15px 0 10px 0;
-      background-color: #202225;
-      position: sticky;
-      top: 0;
-      z-index: 10;
+      padding: 0 0 10px 0;
     }
+    
+    /* ------------------------------ */
+    /* SECCIÓN DE INFORMACIÓN DEL USUARIO (PROFESIONAL) */
+    /* ------------------------------ */
+    .user-info-panel {
+        background-color: #2b2d31; /* Fondo sutilmente más claro */
+        padding: 10px 15px; /* Más padding interno */
+        margin: 0 -15px 20px -15px; /* Se extiende a los bordes */
+        border-radius: 6px;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+    }
+    .user-info-panel h3 {
+        margin: 0 0 5px 0;
+        font-size: 14px;
+        color: #b9bbbe;
+        font-weight: 500;
+    }
+    .user-info-panel .id-display {
+        font-size: 16px;
+        color: white;
+        font-weight: 700;
+        letter-spacing: 0.5px;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+
 
     /* CHAT PRINCIPAL */
     .chat {
@@ -85,40 +99,25 @@
 
     .section-title {
       margin-top: 20px;
-      margin-bottom: 5px;
+      margin-bottom: 8px;
       font-size: 11px;
       color: #949ba4; /* Color más suave */
       text-transform: uppercase;
       font-weight: 700; /* Más audaz */
       letter-spacing: 0.5px;
+      padding-top: 5px;
+      border-top: 1px solid #2b2d31; /* Separador sutil */
     }
-
-    /* Contenedor de perfil/ID (FOOTER) */
-    .user-profile-bar {
-        margin-top: auto; /* Empuja hacia abajo */
-        background-color: #1e1f22; /* Fondo más oscuro para destacar */
-        padding: 10px;
-        margin: 0 -15px -15px -15px; /* Extiende a los bordes del sidebar */
-        border-top: 1px solid #2b2d31;
-    }
-
-    .user-profile-bar .dm-item {
-        margin: 0;
-        padding: 5px;
-        background-color: #1e1f22;
-    }
-
-    .user-profile-bar .id-display {
-        font-size: 10px;
-        color: #8e9297; 
-        margin-top: 2px;
+    .dm-controls .section-title {
+        border-top: none;
+        padding-top: 0;
     }
 
 
     /* Sección de controles de DM */
     .dm-controls {
-        padding-bottom: 15px;
-        border-bottom: 1px solid #2b2d31;
+        padding-bottom: 10px;
+        /* border-bottom: 1px solid #2b2d31; Removido para más limpieza */
     }
 
     .dm-controls input {
@@ -162,6 +161,8 @@
       flex-grow: 1;
       scrollbar-width: thin;
       scrollbar-color: #2b2d31 #202225;
+      margin-right: -10px; /* Compensa el scrollbar */
+      padding-right: 10px;
     }
     /* Estilos de scrollbar (Webkit) */
     .dm-list::-webkit-scrollbar {
@@ -208,7 +209,14 @@
     .dm-item .actions {
         display: flex;
         gap: 5px;
+        opacity: 0; /* Ocultar en reposo */
+        transition: opacity 0.2s;
     }
+
+    .dm-item:hover .actions {
+        opacity: 1; /* Mostrar al pasar el ratón */
+    }
+
     .dm-item .alias-edit-btn, .dm-item .remove-contact-btn {
       background: none;
       border: none;
@@ -240,7 +248,7 @@
     }
     
     /* ------------------------------ */
-    /* CHAT HEADER & MESSAGES (Se mantienen) */
+    /* CHAT HEADER & MESSAGES */
     /* ------------------------------ */
 
     .chat-header {
@@ -355,7 +363,7 @@
     }
 
     /* ------------------------------ */
-    /* AREA DE INPUT Y BOTONES (Se mantienen) */
+    /* AREA DE INPUT Y BOTONES */
     /* ------------------------------ */
     .input-area {
       display: flex;
@@ -442,7 +450,7 @@
             z-index: 50; 
             transform: translateX(-100%);
             box-shadow: 2px 0 10px rgba(0, 0, 0, 0.5);
-            padding-bottom: 0; /* Remove padding-bottom to avoid scroll issues */
+            padding-bottom: 15px; 
         }
         
         /* Muestra la barra lateral cuando tiene la clase 'active' */
@@ -481,7 +489,7 @@
 
 
     /* ------------------------------ */
-    /* ESTILOS MODAL PERSONALIZADO (Se mantienen) */
+    /* ESTILOS MODAL PERSONALIZADO */
     /* ------------------------------ */
     .modal-overlay {
       position: fixed;
@@ -518,7 +526,7 @@
       margin-bottom: 20px;
     }
     .modal-icon-container svg {
-      color: #f04747; 
+      /* Estilo de color definido en SVG */
     }
 
     .modal-title {
@@ -593,30 +601,24 @@
   <div class="sidebar" id="sidebar">
     <h2>Fendrox</h2>
     
-    <div class="sidebar-content">
-        <!-- SECCIÓN DE NUEVO DM Y CONTACTOS -->
-        <div class="section-title">Enviar DM</div>
-        <div class="dm-controls">
-          <input type="text" id="dmTargetId" placeholder="ID del usuario a contactar" />
-          <button onclick="startDM()">Abrir DM</button>
-        </div>
+    <!-- SECCIÓN DE ID DE USUARIO (Panel limpio) -->
+    <div class="user-info-panel">
+        <h3>Tu ID:</h3>
+        <div class="id-display" id="userId"></div>
+    </div>
     
-        <div class="section-title">Contactos Recientes</div>
-        <div id="dmList" class="dm-list">
-            <!-- Los contactos se inyectarán aquí -->
-        </div>
+    <!-- SECCIÓN DE NUEVO DM Y CONTACTOS -->
+    <div class="dm-controls">
+        <div class="section-title">Enviar DM</div>
+        <input type="text" id="dmTargetId" placeholder="ID del usuario a contactar" />
+        <button onclick="startDM()">Abrir DM</button>
     </div>
 
-    <!-- SECCIÓN DE PERFIL (Footer) -->
-    <div class="user-profile-bar">
-        <div class="dm-item" style="cursor:default; align-items: flex-start;">
-            <div class="avatar">T</div>
-            <div>
-                <div style="color:white; font-weight:600;">Tu ID</div>
-                <div class="id-display" id="userId"></div>
-            </div>
-        </div>
+    <div class="section-title">Contactos Recientes</div>
+    <div id="dmList" class="dm-list">
+        <!-- Los contactos se inyectarán aquí -->
     </div>
+
   </div>
   
   <!-- Overlay Móvil -->
