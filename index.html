@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="es">
 <head>
   <meta charset="UTF-8" />
   <title>Farans DM</title>
@@ -113,9 +113,10 @@
     .input-area {
       display: flex;
       gap: 10px;
+      flex-wrap: wrap;
     }
 
-    .input-area input {
+    .input-area input[type="text"] {
       flex: 1;
       padding: 10px;
       border: none;
@@ -126,6 +127,13 @@
 
     .input-area input::placeholder {
       color: #b9bbbe;
+    }
+
+    .input-area input[type="file"] {
+      padding: 6px;
+      background-color: #2f3136;
+      color: white;
+      border: none;
     }
 
     .input-area button {
@@ -159,7 +167,7 @@
   <div class="sidebar">
     <h2>Farans</h2>
     <div class="section-title">Tu ID</div>
-    <div class="dm-item" style="cursor:default;">Anonymous: (<span id="userId"></span>)</div>
+    <div class="dm-item" style="cursor:default;">Anonymous (<span id="userId"></span>)</div>
 
     <div class="section-title">Enviar DM</div>
     <div class="dm-controls">
@@ -175,7 +183,8 @@
     <div class="active-mode" id="activeModeLabel">Ningún DM abierto</div>
     <div class="messages" id="messages"></div>
     <div class="input-area">
-      <input type="text" id="messageInput" placeholder="Escribe tu mensaje o pega un link de imagen..." />
+      <input type="text" id="messageInput" placeholder="Escribe tu mensaje..." />
+      <input type="file" id="imageInput" accept="image/*" />
       <button onclick="sendMessage()">Enviar</button>
     </div>
   </div>
@@ -215,11 +224,11 @@
       for (const msg of msgs) {
         const div = document.createElement('div');
         div.className = 'message';
-        div.innerHTML = `<span>Anonymous (${msg.sender}):</span> ${msg.text}`;
+        div.innerHTML = `<span>Anonymous (${msg.sender}):</span> ${msg.text || ''}`;
 
-        if (msg.text.match(/\.(jpeg|jpg|gif|png|webp)$/i)) {
+        if (msg.image) {
           const img = document.createElement('img');
-          img.src = msg.text;
+          img.src = msg.image;
           img.className = 'chat-image';
           div.appendChild(img);
         }
@@ -235,18 +244,37 @@
     }
 
     function sendMessage() {
-      const input = document.getElementById('messageInput');
-      const text = input.value.trim();
-      if (!text || !currentDM) return;
+      const textInput = document.getElementById('messageInput');
+      const imageInput = document.getElementById('imageInput');
+      const text = textInput.value.trim();
+      const imageFile = imageInput.files[0];
+
+      if (!text && !imageFile) return;
+      if (!currentDM) return;
 
       const key = getDMKey(userId, currentDM);
       const msgs = JSON.parse(localStorage.getItem(key) || '[]');
-      msgs.push({ sender: userId, text, timestamp: Date.now() });
-      localStorage.setItem(key, JSON.stringify(msgs));
+      const timestamp = Date.now();
 
-      updateDMList(currentDM);
-      input.value = '';
-      renderMessages();
+      if (imageFile) {
+        const reader = new FileReader();
+        reader.onload = function (e) {
+          const base64 = e.target.result;
+          msgs.push({ sender: userId, text, image: base64, timestamp });
+          localStorage.setItem(key, JSON.stringify(msgs));
+          updateDMList(currentDM);
+          textInput.value = '';
+          imageInput.value = '';
+          renderMessages();
+        };
+        reader.readAsDataURL(imageFile);
+      } else {
+        msgs.push({ sender: userId, text, timestamp });
+        localStorage.setItem(key, JSON.stringify(msgs));
+        updateDMList(currentDM);
+        textInput.value = '';
+        renderMessages();
+      }
     }
 
     function updateModeLabel() {
@@ -261,22 +289,4 @@
 
       const item = document.createElement('div');
       item.className = 'dm-item';
-      item.textContent = `Anonymous (${fromId})`;
-      item.dataset.id = fromId;
-      item.onclick = () => {
-        currentDM = fromId;
-        renderMessages();
-        updateModeLabel();
-      };
-      list.appendChild(item);
-    }
-
-    document.getElementById('messageInput').addEventListener('keydown', function(e) {
-      if (e.key === 'Enter') {
-        e.preventDefault();
-        sendMessage();
-      }
-    });
-  </script>
-</body>
-</html>
+      item
