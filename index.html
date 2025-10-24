@@ -281,4 +281,18 @@
         msgs.push({ sender: userId, text, timestamp });
         localStorage.setItem(key, JSON.stringify(msgs));
         updateDMList(currentDM);
-        textInput
+        textInput.value = '';
+        renderMessages();
+      }
+    }
+
+    function updateModeLabel() {
+      const label = document.getElementById('activeModeLabel');
+      label.textContent = `DM con Anonymous (${currentDM})`;
+    }
+
+    function updateDMList(fromId) {
+      const list = document.getElementById('dmList');
+      const existing = Array.from(list.children).map(el => el.dataset.id);
+      if (existing.includes(fromId)) return;
+
