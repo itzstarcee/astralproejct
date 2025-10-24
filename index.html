@@ -408,7 +408,7 @@
     .input-area .send-button {
       padding: 8px;
       border: none;
-      border-radius: 6px;
+      border-radius: 6mm;
       background-color: #43b581;
       color: white;
       cursor: pointer;
@@ -702,16 +702,27 @@
         let isAuthReady = false; 
 
         // --- Variables de Estado de la Aplicación ---
-        const USER_ID_KEY = 'fendrox_user_id';
+        const LOCAL_CLIENT_ID_KEY = 'fendrox_local_client_id_v2'; // Key para persistencia del ID local
         const DM_CONTACTS_KEY_PREFIX = 'conclave_dm_contacts_'; 
         const ALIASES_KEY = 'fendrox_aliases'; 
 
-        let currentDM = null; // ID del contacto del chat activo
+        let currentDM = null; 
         let aliases = JSON.parse(localStorage.getItem(ALIASES_KEY) || '{}');
-        let unsubscribeFromChat = null; // Función para desuscribirse del listener de Firestore
+        let unsubscribeFromChat = null; 
 
         
         // --- LÓGICA DE FIREBASE Y AUTHENTICACIÓN ---
+
+        // Función para obtener o crear un ID de cliente persistente en localStorage
+        function getOrCreatePersistentId() {
+            let localId = localStorage.getItem(LOCAL_CLIENT_ID_KEY);
+            if (!localId || localId === 'null' || localId === 'undefined') {
+                localId = crypto.randomUUID();
+                localStorage.setItem(LOCAL_CLIENT_ID_KEY, localId);
+            }
+            return localId;
+        }
+
 
         async function initializeFirebase() {
             try {
@@ -719,20 +730,33 @@
                 db = getFirestore(app);
                 auth = getAuth(app);
                 
-                // 1. Manejo de Autenticación
+                // 1. Manejo de Autenticación: Intentar usar el token de entorno, si no, usar anónimo.
+                // En GitHub Pages, initialAuthToken es null.
                 if (initialAuthToken) {
                     await signInWithCustomToken(auth, initialAuthToken);
                 } else {
-                    await signInAnonymously(auth);
+                    // Autenticación anónima para GitHub Pages. Este UID puede cambiar.
+                    await signInAnonymously(auth); 
                 }
                 
                 // 2. Esperar por el estado de Auth y establecer userId
                 onAuthStateChanged(auth, (user) => {
                     if (user) {
-                        userId = user.uid;
+                        
+                        // ** CORRECCIÓN CLAVE PARA GITHUB PAGES **
+                        // Si NO tenemos el token de entorno (es decir, estamos en GitHub Pages)
+                        // forzamos el uso del ID persistente de localStorage, ignorando el UID volátil de Firebase.
+                        if (!initialAuthToken) {
+                            console.log("Usando ID local persistente para asegurar consistencia en entornos externos.");
+                            userId = getOrCreatePersistentId(); 
+                        } else {
+                            // Si sí hay token de entorno (vista previa de Google), confiamos en el UID real.
+                            userId = user.uid;
+                        }
+
                         isAuthReady = true;
                         
-                        // 3. Actualizar la interfaz (Solución al problema "ni ids")
+                        // 3. Actualizar la interfaz
                         document.getElementById('userId').textContent = userId;
                         document.getElementById('activeModeLabel').textContent = 'Listo para chatear';
                         document.getElementById('sendButton').disabled = false;
@@ -740,9 +764,9 @@
                         // 4. Inicializar la aplicación solo después de tener el userId
                         initializeAppLogic();
                     } else {
-                        // Esto no debería pasar con token inicial, pero es un fallback
-                        console.error("Usuario no autenticado. Usando ID aleatorio.");
-                        userId = crypto.randomUUID();
+                        // Fallback extremo si no se pudo autenticar nada
+                        console.error("Usuario no autenticado. Usando ID local persistente forzado.");
+                        userId = getOrCreatePersistentId(); // Forzar uso de ID persistente
                         isAuthReady = true;
                         document.getElementById('userId').textContent = userId;
                         initializeAppLogic();
@@ -774,6 +798,8 @@
             if (!db || !userId) return null;
 
             const sortedIds = [String(userId), String(targetId)].sort();
+            // La sala de chat se crea con el ID persistente del usuario (userId), asegurando que el chat
+            // se mantiene en la misma colección aunque el UID anónimo de Firebase cambie.
             const chatRoomId = `${sortedIds[0]}_${sortedIds[1]}`;
             
             // Ruta MANDATORIA de Firestore para datos públicos colaborativos:
