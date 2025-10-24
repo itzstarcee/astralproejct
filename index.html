@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Fendrox Compacto</title> 
+  <title>Fendrox Móvil</title> 
   
   <!-- IMPORTS DE FIREBASE (Versión 8.6.8) -->
   <script src="https://www.gstatic.com/firebasejs/8.6.8/firebase-app.js"></script>
@@ -15,26 +15,25 @@
     /* ------------------------------ */
     body {
       margin: 0;
-      font-family: 'Inter', sans-serif; /* Un mejor font */
+      font-family: 'Inter', sans-serif;
       display: flex;
       height: 100vh;
       background-color: #1e1f22; /* Fondo oscuro principal */
       color: #dcddde;
-      overflow: hidden; /* Evita scrolls innecesarios en el body */
+      overflow: hidden; 
     }
 
-    /* BARRA DE CANALES/CONTACTOS (FLEXIBLE) */
-    .sidebar-compact {
-      /* Estilos de Escritorio/Tablet */
+    /* BARRA DE CANALES/CONTACTOS (Diseño de Escritorio) */
+    .sidebar {
       width: 260px;
       flex-shrink: 0;
-      background-color: #202225; /* Un tono más oscuro para el sidebar */
+      background-color: #202225;
       padding: 15px;
       box-sizing: border-box;
       display: flex;
       flex-direction: column;
-      border-right: 1px solid #2f3136; /* Separador sutil */
-      transition: width 0.3s ease; /* Transición para responsive */
+      border-right: 1px solid #2f3136; 
+      transition: transform 0.3s ease; /* Para animación móvil */
     }
     
     /* CHAT PRINCIPAL */
@@ -45,15 +44,15 @@
       padding: 15px;
       box-sizing: border-box;
       min-width: 0; 
-      /* Fondo del chat */
       background-color: #2f3136;
+      position: relative; /* Necesario para el overlay de móvil */
     }
 
     /* ------------------------------ */
-    /* ESTILOS DE CONTACTOS/SIDEBAR */
+    /* ESTILOS DE CONTACTOS/SIDEBAR (Contenido) */
     /* ------------------------------ */
 
-    .sidebar-compact h2 {
+    .sidebar h2 {
       margin-top: 0;
       margin-bottom: 20px;
       color: #ffffff;
@@ -94,7 +93,7 @@
       padding: 10px;
       border: none;
       border-radius: 8px;
-      background-color: #5865f2; /* Azul Discord */
+      background-color: #5865f2;
       color: white;
       font-weight: 600;
       cursor: pointer;
@@ -112,7 +111,6 @@
       margin-top: 10px;
       overflow-y: auto;
       flex-grow: 1;
-      /* Scrollbar estilizada para WebKit */
       scrollbar-width: thin;
       scrollbar-color: #2b2d31 #202225;
     }
@@ -146,7 +144,7 @@
     }
 
     .dm-item.active {
-      background-color: #40444b; /* Más sutil al seleccionar */
+      background-color: #40444b;
       color: white;
     }
     
@@ -156,7 +154,6 @@
         margin-top: 2px;
     }
     
-    /* Iconos dentro de la lista de DMs */
     .dm-item .actions {
         display: flex;
         gap: 5px;
@@ -172,13 +169,32 @@
     }
 
     .dm-item .alias-edit-btn:hover { color: #5865f2; }
-    .dm-item .remove-contact-btn:hover { color: #f23f43; } /* Rojo suave */
+    .dm-item .remove-contact-btn:hover { color: #f23f43; }
+    
+    /* Avatar simple */
+    .avatar {
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        background-color: #5865f2;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: bold;
+        color: white;
+        font-size: 18px;
+        flex-shrink: 0;
+        margin-right: 10px;
+    }
     
     /* ------------------------------ */
     /* CHAT HEADER & MESSAGES */
     /* ------------------------------ */
-    
+
     .chat-header {
+        display: flex;
+        align-items: center;
+        gap: 10px;
         font-size: 16px;
         font-weight: 600;
         color: #b9bbbe;
@@ -186,12 +202,21 @@
         padding-bottom: 10px;
         border-bottom: 1px solid #40444b;
     }
+    
+    /* Botón de Menu (Solo visible en móvil) */
+    .menu-toggle-btn {
+        display: none; 
+        background: none;
+        border: none;
+        color: white;
+        cursor: pointer;
+        padding: 5px;
+    }
 
     .messages {
       flex: 1;
       overflow-y: auto;
-      padding-right: 15px; /* Espacio para scrollbar */
-      /* Fondo del chat */
+      padding-right: 15px;
       background-color: #2f3136;
     }
     .messages::-webkit-scrollbar {
@@ -210,7 +235,7 @@
       margin-bottom: 15px;
       padding: 5px 0;
       display: flex;
-      align-items: flex-start; /* Alineación superior */
+      align-items: flex-start;
       line-height: 1.4;
       position: relative;
     }
@@ -219,7 +244,6 @@
         flex-grow: 1;
         display: flex;
         flex-direction: column;
-        margin-left: 10px;
     }
 
     .message-info {
@@ -230,14 +254,14 @@
     
     .sender-name {
       font-weight: 700;
-      color: #7289da; /* Azul para el nombre */
+      color: #7289da;
       font-size: 15px;
       margin-right: 8px;
     }
     
     .timestamp {
       font-size: 11px;
-      color: #8e9297; /* Gris sutil */
+      color: #8e9297;
       font-weight: 400;
       opacity: 0.8;
     }
@@ -246,21 +270,6 @@
         color: #dcddde;
         word-wrap: break-word;
         max-width: 100%;
-    }
-
-    /* Icono de Avatar simple */
-    .avatar {
-        width: 40px;
-        height: 40px;
-        border-radius: 50%;
-        background-color: #5865f2;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        font-weight: bold;
-        color: white;
-        font-size: 18px;
-        flex-shrink: 0;
     }
 
     img.chat-image {
@@ -293,7 +302,6 @@
         background-color: #4e5055;
     }
 
-
     /* ------------------------------ */
     /* AREA DE INPUT Y BOTONES */
     /* ------------------------------ */
@@ -302,7 +310,7 @@
       gap: 10px;
       align-items: center;
       padding: 10px 15px;
-      background-color: #36393f; /* Barra de input más oscura */
+      background-color: #36393f;
       border-radius: 8px;
       box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
     }
@@ -321,7 +329,6 @@
       color: #8e9297;
     }
 
-    /* Botón de Imagen/Upload */
     .input-area label {
       background: none;
       color: #5865f2; 
@@ -340,12 +347,11 @@
       display: none;
     }
     
-    /* Botón de Enviar (Send) */
     .input-area .send-button {
       padding: 8px;
       border: none;
       border-radius: 6px;
-      background-color: #43b581; /* Verde sutil */
+      background-color: #43b581;
       color: white;
       cursor: pointer;
       transition: background-color 0.2s ease, transform 0.1s;
@@ -372,69 +378,56 @@
     /* ESTILOS RESPONSIVE (MÓVIL) */
     /* ------------------------------ */
     @media (max-width: 768px) {
-        body {
-            /* Forzar el layout en modo vertical si es necesario, aunque flex-row funciona */
+        
+        /* Oculta la barra lateral y la posiciona fuera de la pantalla */
+        .sidebar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            height: 100%;
+            width: 85vw; /* Ocupa la mayor parte de la pantalla */
+            z-index: 50; 
+            transform: translateX(-100%);
+            box-shadow: 2px 0 10px rgba(0, 0, 0, 0.5);
         }
         
-        /* El sidebar se comprime a una barra delgada */
-        .sidebar-compact {
-            width: 70px; 
-            padding: 10px;
-            overflow-x: hidden;
-        }
-
-        .sidebar-compact h2, .section-title, .dm-controls {
-            display: none; /* Oculta títulos y controles en la barra delgada */
+        /* Muestra la barra lateral cuando tiene la clase 'active' */
+        .sidebar.active {
+            transform: translateX(0);
         }
         
-        /* Lista de DMs solo con iconos/iniciales en móvil */
-        .dm-list {
-            padding: 0;
-            margin-top: 0;
-        }
-        
-        .dm-item {
-            justify-content: center;
-            align-items: center;
-            height: 50px;
-            margin-bottom: 10px;
-            padding: 0;
-        }
-        
-        .dm-item div:not(.actions) {
-            display: none; /* Oculta el texto del alias/ID en la barra delgada */
-        }
-
-        .dm-item .actions {
-            display: none; /* Ocultar botones de editar/eliminar en la barra delgada */
-        }
-        
-        /* El DM Item en móvil se convierte en un botón de avatar */
-        .dm-item .avatar {
-            width: 45px;
-            height: 45px;
-        }
-        
-        /* Estilos del Chat */
+        /* El chat ocupa todo el espacio en móvil */
         .chat {
+            width: 100vw;
             padding: 10px;
         }
 
-        /* Ocultar el chat-header en móvil si no es necesario (ya que el chat toma todo el espacio) */
-        .chat-header {
-            font-size: 14px;
-            margin-bottom: 10px;
-            text-align: center;
+        /* Muestra el botón de menú en móvil */
+        .menu-toggle-btn {
+            display: block;
+            margin-right: 10px; 
+            font-size: 20px;
         }
-        
-        .input-area {
-            padding: 8px 10px;
+
+        /* Overlay para cuando el menú está abierto */
+        .overlay-mobile {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background-color: rgba(0, 0, 0, 0.7);
+            z-index: 40; /* Debe estar entre el sidebar (50) y el chat (1) */
+        }
+        .overlay-mobile.active {
+            display: block;
         }
     }
 
 
     /* ------------------------------ */
-    /* ESTILOS MODAL MEJORADOS (Se mantienen) */
+    /* ESTILOS MODAL PERSONALIZADO (Se mantienen) */
     /* ------------------------------ */
     .modal-overlay {
       position: fixed;
@@ -543,12 +536,11 @@
 </head>
 <body>
   
-  <div class="sidebar-compact" id="sidebar">
+  <div class="sidebar" id="sidebar">
     <h2>Fendrox</h2>
     <div class="section-title">Tu ID</div>
-    <!-- Se mantiene el dm-item para la estética de la ID -->
-    <div class="dm-item" style="cursor:default; padding: 10px; margin-bottom: 15px;">
-        <div class="avatar">Tú</div>
+    <div class="dm-item" style="cursor:default; padding: 10px; margin-bottom: 15px; align-items: flex-start;">
+        <div class="avatar">T</div>
         <div>
             <div style="color:white; font-weight:600;">Tu ID</div>
             <div class="id-display" id="userId"></div>
@@ -566,9 +558,24 @@
         <!-- Los contactos se inyectarán aquí -->
     </div>
   </div>
+  
+  <!-- Overlay Móvil -->
+  <div id="mobileOverlay" class="overlay-mobile" onclick="toggleSidebar()"></div>
 
   <div class="chat">
-    <div class="chat-header" id="activeModeLabel">Ningún DM abierto</div>
+    <div class="chat-header" id="chatHeader">
+        <!-- Nuevo botón de menú (solo visible en móvil) -->
+        <button class="menu-toggle-btn" onclick="toggleSidebar()">
+            <!-- Icono de Menú (≡) -->
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <line x1="3" y1="12" x2="21" y2="12"></line>
+                <line x1="3" y1="6" x2="21" y2="6"></line>
+                <line x1="3" y1="18" x2="21" y2="18"></line>
+            </svg>
+        </button>
+        <span id="activeModeLabel">Ningún DM abierto</span>
+    </div>
+    
     <div class="messages" id="messages"></div>
     <div class="input-area">
       <label for="imageInput">
@@ -605,9 +612,7 @@
 
 
   <script>
-    // CONFIGURACIÓN DE FIREBASE INTEGRADA
-    // NOTA: Esta configuración fue tomada de tu código anterior. Si deseas un chat multi-usuario real,
-    // DEBES configurar las reglas de seguridad de Firestore para permitir la lectura y escritura en 'chats'.
+    // Configuración de Firebase - Usando la configuración que me proporcionaste
     const firebaseConfig = {
       apiKey: "AIzaSyC31C2OrmxBrl2EhXGzzdwbK-AVa-wrMzo",
       authDomain: "gifthub1-712d1.firebaseapp.com",
@@ -638,6 +643,18 @@
     let currentDM = null;
     let aliases = JSON.parse(localStorage.getItem(ALIASES_KEY) || '{}');
     let unsubscribeFromChat = null; 
+    
+    // --- LÓGICA DE SIDEBAR (NUEVO PARA EL MÓVIL) ---
+    function toggleSidebar() {
+        const sidebar = document.getElementById('sidebar');
+        const overlay = document.getElementById('mobileOverlay');
+        const isActive = sidebar.classList.toggle('active');
+
+        // Toggle del overlay y del scroll del body (para evitar el desplazamiento del fondo)
+        overlay.classList.toggle('active', isActive);
+        document.body.style.overflow = isActive ? 'hidden' : 'auto';
+    }
+
 
     // --- FUNCIONES DE MODAL PERSONALIZADO ---
 
@@ -720,7 +737,8 @@
     
     function getDMKey(id1, id2) {
       const sorted = [String(id1), String(id2)].sort();
-      return `${sorted[0]}_${sorted[1]}`;
+      // Usamos el camino completo tal como lo usaste
+      return `artifacts/appId/public/data/chats/${sorted[0]}_${sorted[1]}`;
     }
 
     // Genera las iniciales para el avatar
@@ -853,6 +871,7 @@
         avatar.textContent = initials;
         
         const textContainer = document.createElement('div');
+        textContainer.style.flexGrow = '1';
         textContainer.innerHTML = `<div style="color:white; font-weight:600; max-width: 150px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">${alias}</div><div class="id-display">ID: ${contactId}</div>`;
 
         const actionsContainer = document.createElement('div');
@@ -881,13 +900,15 @@
         actionsContainer.appendChild(removeButton);
 
         dmItem.appendChild(avatar);
-        // En móvil, textContainer y actionsContainer se ocultan por CSS.
-        // Los mantenemos en el HTML para escritorio.
         dmItem.appendChild(textContainer);
         dmItem.appendChild(actionsContainer);
 
         dmItem.onclick = () => {
           selectDM(contactId);
+          // Si estamos en móvil, cierra la barra lateral al seleccionar un chat
+          if (window.innerWidth <= 768) {
+              toggleSidebar();
+          }
         };
 
         if (String(contactId) === String(currentDM)) {
@@ -912,8 +933,15 @@
                     return;
                 }
 
-                const chatRoomId = getDMKey(userId, currentDM);
-                const msgRef = db.collection('chats').doc(chatRoomId).collection('messages').doc(messageId);
+                // Aquí usamos la función getDMKey para construir la ruta correcta del chat
+                const docPath = getDMKey(userId, currentDM);
+                
+                // Extraemos la colección 'chats' y el doc 'chatRoomId'
+                const [,,,...pathSegments] = docPath.split('/');
+                const chatRoomId = pathSegments.slice(2).join('/'); // Esto es para replicar tu estructura anterior: 'ID1_ID2'
+                const chatRef = db.collection('chats').doc(chatRoomId).collection('messages');
+                
+                const msgRef = chatRef.doc(messageId);
 
                 msgRef.delete().then(() => {
                     console.log("Mensaje eliminado con éxito:", messageId);
@@ -960,7 +988,7 @@
         const time = document.createElement('span');
         time.className = 'timestamp';
         const date = msg.timestamp && msg.timestamp.toDate ? new Date(msg.timestamp.toDate()) : new Date();
-        time.textContent = date.toLocaleString();
+        time.textContent = date.toLocaleTimeString('es-ES', {hour: '2-digit', minute:'2-digit', second:'2-digit', hour12: true}) + ', ' + date.toLocaleDateString('es-ES');
         info.appendChild(time);
         
         contentContainer.appendChild(info);
@@ -1014,7 +1042,11 @@
         }
 
         const chatRoomId = getDMKey(userId, currentDM);
-        const chatRef = db.collection('chats').doc(chatRoomId).collection('messages');
+        
+        // Extraemos la colección 'chats' y el doc 'chatRoomId'
+        const [,,,...pathSegments] = chatRoomId.split('/');
+        const docId = pathSegments.slice(2).join('/'); // Esto es para replicar tu estructura anterior: 'ID1_ID2'
+        const chatRef = db.collection('chats').doc(docId).collection('messages');
         
         // Listener en tiempo real
         unsubscribeFromChat = chatRef.orderBy('timestamp').onSnapshot(snapshot => {
@@ -1053,9 +1085,14 @@
       sendButton.disabled = true; 
       addContact(currentDM); 
 
+      // Aquí usamos la función getDMKey para construir la ruta correcta del chat
       const chatRoomId = getDMKey(userId, currentDM);
-      const chatRef = db.collection('chats').doc(chatRoomId).collection('messages');
       
+      // Extraemos la colección 'chats' y el doc 'chatRoomId'
+      const [,,,...pathSegments] = chatRoomId.split('/');
+      const docId = pathSegments.slice(2).join('/'); // Esto es para replicar tu estructura anterior: 'ID1_ID2'
+      const chatRef = db.collection('chats').doc(docId).collection('messages');
+
       const messageData = { 
           sender: userId, 
           text: text, 
@@ -1065,12 +1102,16 @@
       const saveMessageToFirebase = async (imageBase64 = null) => {
         if (imageBase64) {
             messageData.image = imageBase64;
-            messageData.text = text; // Asegura que el texto se guarde si hay imagen
+            // Solo incluimos el texto si existe junto a la imagen
+            if (!text) delete messageData.text; 
+        } else {
+            // Si no hay imagen, eliminamos la propiedad 'image' por si acaso
+            delete messageData.image; 
         }
 
         try {
             await chatRef.add(messageData); 
-            console.log("✅ Mensaje enviado con éxito al chat room:", chatRoomId);
+            console.log("✅ Mensaje enviado con éxito al chat room:", docId);
             
             textInput.value = '';
             imageInput.value = '';
