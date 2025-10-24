@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Fendrox</title> 
+  <title>Fendrox Compacto</title> 
   
   <!-- IMPORTS DE FIREBASE (Versión 8.6.8) -->
   <script src="https://www.gstatic.com/firebasejs/8.6.8/firebase-app.js"></script>
@@ -11,30 +11,30 @@
 
   <style>
     /* ------------------------------ */
-    /* ESTILOS BASE Y RESPONSIVE */
+    /* ESTILOS BASE Y LAYOUT GENERAL */
     /* ------------------------------ */
     body {
       margin: 0;
-      font-family: 'Segoe UI', sans-serif;
+      font-family: 'Inter', sans-serif; /* Un mejor font */
       display: flex;
       height: 100vh;
-      background-color: #1e1f22;
+      background-color: #1e1f22; /* Fondo oscuro principal */
       color: #dcddde;
-      flex-direction: row; /* Desktop/Tablet por defecto */
+      overflow: hidden; /* Evita scrolls innecesarios en el body */
     }
 
-    /* BARRA LATERAL (SIDEBAR) */
-    .sidebar {
+    /* BARRA DE CANALES/CONTACTOS (FLEXIBLE) */
+    .sidebar-compact {
+      /* Estilos de Escritorio/Tablet */
       width: 260px;
       flex-shrink: 0;
-      background-color: #2f3136;
-      padding: 20px;
+      background-color: #202225; /* Un tono más oscuro para el sidebar */
+      padding: 15px;
       box-sizing: border-box;
       display: flex;
       flex-direction: column;
-      /* Animación para dispositivos móviles */
-      transition: transform 0.3s ease-in-out;
-      position: relative; /* Necesario para que el icono de menú funcione */
+      border-right: 1px solid #2f3136; /* Separador sutil */
+      transition: width 0.3s ease; /* Transición para responsive */
     }
     
     /* CHAT PRINCIPAL */
@@ -42,54 +42,40 @@
       flex: 1;
       display: flex;
       flex-direction: column;
-      padding: 20px;
+      padding: 15px;
       box-sizing: border-box;
-      min-width: 0; /* Asegura que el chat se adapte en pantallas pequeñas */
-    }
-
-    /* ESTILOS ESPECÍFICOS PARA MÓVILES */
-    @media (max-width: 768px) {
-        body {
-            flex-direction: column;
-        }
-        .sidebar {
-            width: 100%;
-            height: 100vh;
-            position: fixed;
-            z-index: 999;
-            transform: translateX(-100%); /* Ocultar por defecto en móvil */
-        }
-        .sidebar.open {
-            transform: translateX(0); /* Mostrar cuando esté abierto */
-        }
-        .chat {
-            width: 100%;
-            padding: 10px;
-        }
-        .header-mobile {
-            display: flex !important; /* Mostrar header en móvil */
-            margin-bottom: 10px;
-        }
-        .messages {
-            height: calc(100vh - 120px); /* Ajustar altura en móvil */
-            margin-bottom: 10px;
-        }
+      min-width: 0; 
+      /* Fondo del chat */
+      background-color: #2f3136;
     }
 
     /* ------------------------------ */
-    /* BARRA LATERAL DETALLES */
+    /* ESTILOS DE CONTACTOS/SIDEBAR */
     /* ------------------------------ */
 
-    .sidebar h2 {
-      margin-bottom: 10px;
+    .sidebar-compact h2 {
+      margin-top: 0;
+      margin-bottom: 20px;
       color: #ffffff;
-      font-size: 22px;
+      font-size: 24px;
+      font-weight: 800;
+      letter-spacing: -0.5px;
+      border-bottom: 2px solid #2b2d31;
+      padding-bottom: 10px;
     }
 
     .section-title {
-      margin-top: 20px;
-      font-size: 13px;
+      margin-top: 15px;
+      margin-bottom: 5px;
+      font-size: 11px;
       color: #b9bbbe;
+      text-transform: uppercase;
+      font-weight: 600;
+    }
+
+    .dm-controls {
+        padding-bottom: 10px;
+        border-bottom: 1px solid #2b2d31;
     }
 
     .dm-controls input {
@@ -97,249 +83,358 @@
       margin-bottom: 10px;
       padding: 10px;
       border: none;
-      border-radius: 6px;
-      background-color: #40444b;
+      border-radius: 8px;
+      background-color: #36393f; 
       color: white;
+      box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.3);
     }
-
+    
     .dm-controls button {
+      width: 100%;
       padding: 10px;
       border: none;
-      border-radius: 6px;
-      background-color: #7289da;
+      border-radius: 8px;
+      background-color: #5865f2; /* Azul Discord */
       color: white;
-      font-weight: bold;
+      font-weight: 600;
       cursor: pointer;
-      transition: background-color 0.2s;
+      transition: background-color 0.2s, transform 0.1s;
     }
 
     .dm-controls button:hover {
-      background-color: #5b6eae;
+      background-color: #4752c4;
+    }
+    .dm-controls button:active {
+        transform: translateY(1px);
     }
 
     .dm-list {
       margin-top: 10px;
       overflow-y: auto;
       flex-grow: 1;
+      /* Scrollbar estilizada para WebKit */
+      scrollbar-width: thin;
+      scrollbar-color: #2b2d31 #202225;
+    }
+    .dm-list::-webkit-scrollbar {
+        width: 8px;
+    }
+    .dm-list::-webkit-scrollbar-track {
+        background: #202225;
+    }
+    .dm-list::-webkit-scrollbar-thumb {
+        background-color: #2b2d31;
+        border-radius: 20px;
+        border: 2px solid #202225;
     }
 
+
     .dm-item {
-      padding: 8px;
+      padding: 10px;
       margin-bottom: 5px;
-      background-color: #36393f;
-      border-radius: 5px;
+      background-color: transparent;
+      border-radius: 8px;
       cursor: pointer;
       display: flex;
       justify-content: space-between;
       align-items: center;
       transition: background-color 0.2s;
     }
+    
+    .dm-item:hover:not(.active) {
+      background-color: #36393f;
+    }
 
     .dm-item.active {
-      background-color: #5b6eae;
+      background-color: #40444b; /* Más sutil al seleccionar */
       color: white;
     }
     
-    .dm-item:not(.active):hover {
-      background-color: #7289da;
+    .dm-item .id-display {
+        font-size: 10px;
+        color: #b9bbbe;
+        margin-top: 2px;
     }
-
+    
+    /* Iconos dentro de la lista de DMs */
     .dm-item .actions {
         display: flex;
         gap: 5px;
     }
-
     .dm-item .alias-edit-btn, .dm-item .remove-contact-btn {
-      margin-left: 0;
       background: none;
       border: none;
-      color: #7289da;
+      color: #b9bbbe;
       cursor: pointer;
-      font-size: 16px;
-      padding: 0 4px; 
+      padding: 0; 
       line-height: 1;
       transition: color 0.2s;
     }
+
+    .dm-item .alias-edit-btn:hover { color: #5865f2; }
+    .dm-item .remove-contact-btn:hover { color: #f23f43; } /* Rojo suave */
     
-    .dm-item .remove-contact-btn {
-        color: #f04747; 
-    }
-
-    .dm-item.active .alias-edit-btn {
-      color: white;
-    }
-
-    .dm-item.active .remove-contact-btn {
-      color: #ff6e6e; 
-    }
-
-    .dm-item .id-display {
-        font-size: 10px;
+    /* ------------------------------ */
+    /* CHAT HEADER & MESSAGES */
+    /* ------------------------------ */
+    
+    .chat-header {
+        font-size: 16px;
+        font-weight: 600;
         color: #b9bbbe;
-    }
-    
-    /* ------------------------------ */
-    /* CHAT, MENSAJES Y INPUTS */
-    /* ------------------------------ */
-    .header-mobile {
-        display: none;
-        align-items: center;
-        justify-content: space-between;
-        width: 100%;
-    }
-
-    .menu-btn {
-        background: none;
-        border: none;
-        color: white;
-        cursor: pointer;
-        padding: 5px;
+        margin-bottom: 15px;
+        padding-bottom: 10px;
+        border-bottom: 1px solid #40444b;
     }
 
     .messages {
       flex: 1;
       overflow-y: auto;
+      padding-right: 15px; /* Espacio para scrollbar */
+      /* Fondo del chat */
       background-color: #2f3136;
-      padding: 15px;
-      border-radius: 8px;
-      margin-bottom: 15px;
+    }
+    .messages::-webkit-scrollbar {
+        width: 10px;
+    }
+    .messages::-webkit-scrollbar-track {
+        background: #2f3136;
+    }
+    .messages::-webkit-scrollbar-thumb {
+        background-color: #40444b;
+        border-radius: 20px;
+        border: 3px solid #2f3136;
     }
 
     .message {
-      margin-bottom: 12px;
-      padding: 8px 12px;
-      background-color: #40444b;
-      border-radius: 5px;
+      margin-bottom: 15px;
+      padding: 5px 0;
       display: flex;
-      justify-content: space-between;
-      align-items: center;
+      align-items: flex-start; /* Alineación superior */
+      line-height: 1.4;
       position: relative;
     }
     
     .message-content {
         flex-grow: 1;
+        display: flex;
+        flex-direction: column;
+        margin-left: 10px;
     }
 
-    .message span {
-      font-weight: bold;
-      color: #7289da;
-      margin-right: 6px;
+    .message-info {
+        display: flex;
+        align-items: center;
+        margin-bottom: 2px;
     }
-
+    
+    .sender-name {
+      font-weight: 700;
+      color: #7289da; /* Azul para el nombre */
+      font-size: 15px;
+      margin-right: 8px;
+    }
+    
     .timestamp {
-      font-size: 12px;
-      color: #b9bbbe;
-      margin-top: 4px;
-      display: block;
+      font-size: 11px;
+      color: #8e9297; /* Gris sutil */
+      font-weight: 400;
+      opacity: 0.8;
+    }
+    
+    .message-text {
+        color: #dcddde;
+        word-wrap: break-word;
+        max-width: 100%;
+    }
+
+    /* Icono de Avatar simple */
+    .avatar {
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        background-color: #5865f2;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: bold;
+        color: white;
+        font-size: 18px;
+        flex-shrink: 0;
+    }
+
+    img.chat-image {
+      max-width: 100%;
+      max-height: 300px;
+      object-fit: contain;
+      margin-top: 10px;
+      border-radius: 8px;
+      border: 1px solid #40444b;
     }
 
     /* Botón de eliminar mensaje propio */
     .delete-message-btn {
-        background: none;
+        position: absolute;
+        right: 15px;
+        top: 8px;
+        background: #36393f;
         border: none;
-        color: #ff6e6e;
+        color: #f23f43;
         cursor: pointer;
-        padding: 4px;
-        margin-left: 10px;
-        flex-shrink: 0;
+        padding: 5px;
+        border-radius: 4px;
+        opacity: 0;
+        transition: opacity 0.2s, background-color 0.2s;
+    }
+    .message:hover .delete-message-btn {
+        opacity: 1;
     }
     .delete-message-btn:hover {
-        color: #f04747;
+        background-color: #4e5055;
     }
 
 
+    /* ------------------------------ */
+    /* AREA DE INPUT Y BOTONES */
+    /* ------------------------------ */
     .input-area {
       display: flex;
       gap: 10px;
-      flex-wrap: wrap;
       align-items: center;
+      padding: 10px 15px;
+      background-color: #36393f; /* Barra de input más oscura */
+      border-radius: 8px;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
     }
 
     .input-area input[type="text"] {
       flex: 1;
-      padding: 10px;
+      padding: 8px 0;
       border: none;
-      border-radius: 6px;
-      background-color: #40444b;
+      background-color: transparent;
       color: white;
+      font-size: 16px;
+      outline: none;
     }
 
     .input-area input::placeholder {
-      color: #b9bbbe;
+      color: #8e9297;
     }
 
+    /* Botón de Imagen/Upload */
     .input-area label {
-      background-color: #5865f2;
-      color: white;
-      padding: 8px 12px;
-      border-radius: 6px;
+      background: none;
+      color: #5865f2; 
+      padding: 0;
       cursor: pointer;
       font-size: 14px;
       display: flex;
       align-items: center;
-      transition: background-color 0.2s;
+      transition: color 0.2s;
     }
     .input-area label:hover {
-        background-color: #4a54c9;
-    }
-    .input-area label svg {
-        margin-right: 5px;
+        color: #7289da;
     }
 
     .input-area input[type="file"] {
       display: none;
     }
     
-    .active-mode {
-      margin-bottom: 10px;
-      font-size: 14px;
-      color: #43b581;
-    }
-
-    img.chat-image {
-      max-width: 100%;
-      margin-top: 8px;
-      border-radius: 6px;
-    }
-
-    /* ------------------------------ */
-    /* NUEVOS ESTILOS PARA BOTÓN ENVIAR */
-    /* ------------------------------ */
+    /* Botón de Enviar (Send) */
     .input-area .send-button {
-      /* Estilos base */
-      padding: 10px 15px;
+      padding: 8px;
       border: none;
       border-radius: 6px;
-      background-color: #43b581; /* Verde Discord para enviar */
+      background-color: #43b581; /* Verde sutil */
       color: white;
-      font-weight: bold;
       cursor: pointer;
-      transition: background-color 0.2s ease, box-shadow 0.2s ease, transform 0.1s;
+      transition: background-color 0.2s ease, transform 0.1s;
+      flex-shrink: 0; 
       display: flex;
       align-items: center;
-      justify-content: center;
-      gap: 5px;
-      flex-shrink: 0; /* Evita que el botón se comprima */
-      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
     }
 
     .input-area .send-button:hover {
-      background-color: #3aa876; /* Tono más oscuro al pasar el ratón */
-      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+      background-color: #3aa876; 
     }
     
     .input-area .send-button:active {
-        transform: scale(0.98);
+        transform: scale(0.95);
     }
     
     .input-area .send-button:disabled {
         background-color: #5d7e6f;
         cursor: not-allowed;
-        box-shadow: none;
     }
 
+
     /* ------------------------------ */
-    /* ESTILOS MODAL MEJORADOS */
+    /* ESTILOS RESPONSIVE (MÓVIL) */
+    /* ------------------------------ */
+    @media (max-width: 768px) {
+        body {
+            /* Forzar el layout en modo vertical si es necesario, aunque flex-row funciona */
+        }
+        
+        /* El sidebar se comprime a una barra delgada */
+        .sidebar-compact {
+            width: 70px; 
+            padding: 10px;
+            overflow-x: hidden;
+        }
+
+        .sidebar-compact h2, .section-title, .dm-controls {
+            display: none; /* Oculta títulos y controles en la barra delgada */
+        }
+        
+        /* Lista de DMs solo con iconos/iniciales en móvil */
+        .dm-list {
+            padding: 0;
+            margin-top: 0;
+        }
+        
+        .dm-item {
+            justify-content: center;
+            align-items: center;
+            height: 50px;
+            margin-bottom: 10px;
+            padding: 0;
+        }
+        
+        .dm-item div:not(.actions) {
+            display: none; /* Oculta el texto del alias/ID en la barra delgada */
+        }
+
+        .dm-item .actions {
+            display: none; /* Ocultar botones de editar/eliminar en la barra delgada */
+        }
+        
+        /* El DM Item en móvil se convierte en un botón de avatar */
+        .dm-item .avatar {
+            width: 45px;
+            height: 45px;
+        }
+        
+        /* Estilos del Chat */
+        .chat {
+            padding: 10px;
+        }
+
+        /* Ocultar el chat-header en móvil si no es necesario (ya que el chat toma todo el espacio) */
+        .chat-header {
+            font-size: 14px;
+            margin-bottom: 10px;
+            text-align: center;
+        }
+        
+        .input-area {
+            padding: 8px 10px;
+        }
+    }
+
+
+    /* ------------------------------ */
+    /* ESTILOS MODAL MEJORADOS (Se mantienen) */
     /* ------------------------------ */
     .modal-overlay {
       position: fixed;
@@ -347,7 +442,7 @@
       left: 0;
       width: 100%;
       height: 100%;
-      background-color: rgba(0, 0, 0, 0.85); /* Un poco más oscuro */
+      background-color: rgba(0, 0, 0, 0.85); 
       display: none; 
       justify-content: center;
       align-items: center;
@@ -362,32 +457,32 @@
     }
 
     .modal-content {
-      background-color: #2f3136; /* Fondo más oscuro y consistente */
+      background-color: #2f3136; 
       padding: 30px;
-      border-radius: 12px; /* Más redondeado */
+      border-radius: 12px; 
       width: 90%;
       max-width: 450px;
       box-shadow: 0 8px 25px rgba(0, 0, 0, 0.6);
       text-align: center;
-      border: 1px solid #40444b; /* Borde sutil */
+      border: 1px solid #40444b; 
     }
 
     .modal-icon-container {
       margin-bottom: 20px;
     }
     .modal-icon-container svg {
-      color: #f04747; /* Rojo para advertencia/delete */
+      color: #f04747; 
     }
 
     .modal-title {
-      font-size: 26px; /* Más grande */
+      font-size: 26px; 
       font-weight: 700;
       color: white;
       margin-bottom: 10px;
     }
 
     .modal-message {
-      color: #b9bbbe; /* Texto más suave */
+      color: #b9bbbe; 
       margin-bottom: 25px;
       line-height: 1.5;
     }
@@ -430,31 +525,35 @@
     }
 
     .btn-primary {
-      background-color: #7289da; 
+      background-color: #5865f2; 
       color: white;
     }
     .btn-primary:hover {
-        background-color: #5b6eae;
+        background-color: #4752c4;
     }
 
     .btn-danger {
-        background-color: #f04747; 
+        background-color: #f23f43; 
         color: white;
     }
     .btn-danger:hover {
-        background-color: #c93c3c;
+        background-color: #c93337;
     }
   </style>
 </head>
 <body>
   
-  <div class="sidebar" id="sidebar">
-    <button class="menu-btn" onclick="toggleSidebar()" style="position: absolute; top: 10px; right: 10px; display: none;">
-        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
-    </button>
+  <div class="sidebar-compact" id="sidebar">
     <h2>Fendrox</h2>
     <div class="section-title">Tu ID</div>
-    <div class="dm-item" style="cursor:default;"><span id="userId"></span></div>
+    <!-- Se mantiene el dm-item para la estética de la ID -->
+    <div class="dm-item" style="cursor:default; padding: 10px; margin-bottom: 15px;">
+        <div class="avatar">Tú</div>
+        <div>
+            <div style="color:white; font-weight:600;">Tu ID</div>
+            <div class="id-display" id="userId"></div>
+        </div>
+    </div>
 
     <div class="section-title">Enviar DM</div>
     <div class="dm-controls">
@@ -462,34 +561,27 @@
       <button onclick="startDM()">Abrir DM</button>
     </div>
 
-    <div class="section-title">Personas que te han escrito</div>
-    <div id="dmList" class="dm-list"></div>
+    <div class="section-title">Contactos Recientes</div>
+    <div id="dmList" class="dm-list">
+        <!-- Los contactos se inyectarán aquí -->
+    </div>
   </div>
 
   <div class="chat">
-    <div class="header-mobile" id="mobileHeader">
-        <button class="menu-btn" onclick="toggleSidebar()">
-            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="3" y1="12" x2="21" y2="12"></line><line x1="3" y1="6" x2="21" y2="6"></line><line x1="3" y1="18" x2="21" y2="18"></line></svg>
-        </button>
-        <div class="active-mode" id="activeModeLabelMobile">Ningún DM abierto</div>
-    </div>
-    
-    <div class="active-mode" id="activeModeLabel">Ningún DM abierto</div>
+    <div class="chat-header" id="activeModeLabel">Ningún DM abierto</div>
     <div class="messages" id="messages"></div>
     <div class="input-area">
-      <input type="text" id="messageInput" placeholder="Escribe tu mensaje..." />
       <label for="imageInput">
-        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: middle;">
+        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
             <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
             <circle cx="8.5" cy="8.5" r="1.5"></circle>
             <polyline points="21 15 16 10 5 21"></polyline>
         </svg>
-        Imagen
-    </label>
+      </label>
       <input type="file" id="imageInput" accept="image/*" />
-      <!-- BOTÓN DE ENVIAR ACTUALIZADO CON ICONO -->
+      <input type="text" id="messageInput" placeholder="Escribe tu mensaje..." />
       <button onclick="sendMessage()" class="send-button">
-          <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
             <line x1="22" y1="2" x2="11" y2="13"></line><polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
           </svg>
       </button>
@@ -514,6 +606,8 @@
 
   <script>
     // CONFIGURACIÓN DE FIREBASE INTEGRADA
+    // NOTA: Esta configuración fue tomada de tu código anterior. Si deseas un chat multi-usuario real,
+    // DEBES configurar las reglas de seguridad de Firestore para permitir la lectura y escritura en 'chats'.
     const firebaseConfig = {
       apiKey: "AIzaSyC31C2OrmxBrl2EhXGzzdwbK-AVa-wrMzo",
       authDomain: "gifthub1-712d1.firebaseapp.com",
@@ -533,12 +627,13 @@
 
     let userId = localStorage.getItem(USER_ID_KEY);
     
-    // El ID del usuario se mantiene al recargar (si existe)
+    // Generar o recuperar ID de usuario
     if (!userId) {
+        // Generar un ID de 4 dígitos para simplicidad
         userId = String(Math.floor(1000 + Math.random() * 9000));
         localStorage.setItem(USER_ID_KEY, userId);
     }
-    document.getElementById('userId').textContent = `Tu ID: ${userId}`;
+    document.getElementById('userId').textContent = userId;
 
     let currentDM = null;
     let aliases = JSON.parse(localStorage.getItem(ALIASES_KEY) || '{}');
@@ -546,31 +641,10 @@
 
     // --- FUNCIONES DE MODAL PERSONALIZADO ---
 
-    // Iconos SVG
-    const TRASH_SVG = `
-        <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#f04747" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M3 6h18"/>
-            <path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/>
-            <path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/>
-        </svg>
-    `;
+    const TRASH_SVG = `<svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#f23f43" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/></svg>`;
+    const PENCIL_SVG = `<svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#5865f2" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/></svg>`;
+    const ALERT_SVG = `<svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#ffc600" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>`;
 
-    const PENCIL_SVG = `
-        <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#7289da" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/>
-        </svg>
-    `;
-    
-    // Icono para la alerta simple (NUEVO y estilizado)
-    const ALERT_SVG = `
-        <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#ffc600" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path>
-            <line x1="12" y1="9" x2="12" y2="13"></line>
-            <line x1="12" y1="17" x2="12.01" y2="17"></line>
-        </svg>
-    `;
-
-    // Función principal para mostrar el modal y manejar los callbacks
     function showCustomModal(type, title, message, callback, defaultValue = '') {
       const modal = document.getElementById('customModal');
       const modalTitle = document.getElementById('modalTitle');
@@ -579,24 +653,18 @@
       const modalActions = document.getElementById('modalActions');
       const modalIcon = document.getElementById('modalIcon');
 
-      // Limpiar y configurar elementos
       modalTitle.textContent = title;
       modalMessage.textContent = message;
       modalActions.innerHTML = '';
       modalInput.style.display = 'none';
       modalIcon.innerHTML = '';
 
-      // Configurar según el tipo de modal
       if (type === 'alert') {
-        modalIcon.innerHTML = ALERT_SVG; // Icono de alerta
-        
+        modalIcon.innerHTML = ALERT_SVG; 
         const okButton = document.createElement('button');
         okButton.className = 'modal-btn btn-primary';
         okButton.textContent = 'Aceptar';
-        okButton.onclick = () => {
-          modal.classList.remove('active');
-          if (callback) callback(true);
-        };
+        okButton.onclick = () => { modal.classList.remove('active'); if (callback) callback(true); };
         modalActions.appendChild(okButton);
 
       } else if (type === 'confirm') {
@@ -605,18 +673,12 @@
         const cancelButton = document.createElement('button');
         cancelButton.className = 'modal-btn btn-cancel';
         cancelButton.textContent = 'Cancelar';
-        cancelButton.onclick = () => {
-            modal.classList.remove('active');
-            if (callback) callback(false); // Retorna falso en cancelar
-        };
+        cancelButton.onclick = () => { modal.classList.remove('active'); if (callback) callback(false); };
         
         const confirmButton = document.createElement('button');
         confirmButton.className = 'modal-btn btn-danger';
         confirmButton.textContent = 'Eliminar';
-        confirmButton.onclick = () => {
-          modal.classList.remove('active');
-          if (callback) callback(true); // Retorna verdadero en confirmar
-        };
+        confirmButton.onclick = () => { modal.classList.remove('active'); if (callback) callback(true); };
         
         modalActions.appendChild(cancelButton);
         modalActions.appendChild(confirmButton);
@@ -631,20 +693,13 @@
         const cancelButton = document.createElement('button');
         cancelButton.className = 'modal-btn btn-cancel';
         cancelButton.textContent = 'Cancelar';
-        cancelButton.onclick = () => {
-            modal.classList.remove('active');
-            if (callback) callback(null);
-        };
+        cancelButton.onclick = () => { modal.classList.remove('active'); if (callback) callback(null); };
         
         const saveButton = document.createElement('button');
         saveButton.className = 'modal-btn btn-primary';
         saveButton.textContent = 'Guardar';
-        saveButton.onclick = () => {
-          modal.classList.remove('active');
-          if (callback) callback(modalInput.value);
-        };
+        saveButton.onclick = () => { modal.classList.remove('active'); if (callback) callback(modalInput.value); };
 
-        // Permitir guardar con Enter
         modalInput.onkeypress = (e) => {
             if (e.key === 'Enter') saveButton.click();
         };
@@ -653,7 +708,6 @@
         modalActions.appendChild(saveButton);
       }
 
-      // Mostrar el modal
       modal.classList.add('active');
     }
 
@@ -664,43 +718,16 @@
 
     // --- Funciones Auxiliares ---
     
-    // Función para manejar el diseño responsive (NUEVO)
-    function checkResponsiveLayout() {
-        const sidebar = document.getElementById('sidebar');
-        const mobileHeader = document.getElementById('mobileHeader');
-
-        if (window.innerWidth <= 768) {
-            mobileHeader.style.display = 'flex';
-            sidebar.style.position = 'fixed';
-            // Asegura que el sidebar esté oculto por defecto
-            if (!sidebar.classList.contains('open')) {
-                sidebar.style.transform = 'translateX(-100%)';
-            }
-        } else {
-            mobileHeader.style.display = 'none';
-            sidebar.style.position = 'relative';
-            sidebar.style.transform = 'translateX(0)';
-            sidebar.classList.remove('open'); // Quitar clase 'open' en desktop
-        }
-    }
-
-    // Toggle para mostrar/ocultar el menú lateral en móvil (NUEVO)
-    function toggleSidebar() {
-        const sidebar = document.getElementById('sidebar');
-        sidebar.classList.toggle('open');
-        // Muestra el botón de cerrar en el sidebar si está abierto
-        const closeBtn = sidebar.querySelector('.menu-btn');
-        if (sidebar.classList.contains('open')) {
-             closeBtn.style.display = 'block';
-        } else {
-             closeBtn.style.display = 'none';
-        }
-    }
-
-
     function getDMKey(id1, id2) {
       const sorted = [String(id1), String(id2)].sort();
       return `${sorted[0]}_${sorted[1]}`;
+    }
+
+    // Genera las iniciales para el avatar
+    function getInitials(id) {
+        if (id === userId) return 'T'; // Tu
+        const alias = aliases[id] || `ID ${id}`;
+        return alias.charAt(0).toUpperCase();
     }
 
     function getAlias(id) {
@@ -784,7 +811,6 @@
 
     function updateModeLabel() {
       const label = document.getElementById('activeModeLabel');
-      const labelMobile = document.getElementById('activeModeLabelMobile');
 
       let text;
       if (currentDM) {
@@ -795,7 +821,6 @@
       }
       
       label.textContent = text;
-      labelMobile.textContent = text; // Actualiza el label móvil
 
       document.querySelectorAll('.dm-item').forEach(item => {
         item.classList.remove('active');
@@ -816,13 +841,19 @@
         if (String(contactId) === String(userId)) continue; 
 
         const alias = getAlias(contactId);
+        const initials = getInitials(contactId);
 
         const dmItem = document.createElement('div');
         dmItem.className = 'dm-item';
         dmItem.dataset.id = contactId;
         
+        // Avatar
+        const avatar = document.createElement('div');
+        avatar.className = 'avatar';
+        avatar.textContent = initials;
+        
         const textContainer = document.createElement('div');
-        textContainer.innerHTML = `<div>${alias}</div><div class="id-display">ID: ${contactId}</div>`;
+        textContainer.innerHTML = `<div style="color:white; font-weight:600; max-width: 150px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">${alias}</div><div class="id-display">ID: ${contactId}</div>`;
 
         const actionsContainer = document.createElement('div');
         actionsContainer.className = 'actions';
@@ -831,11 +862,7 @@
         const editButton = document.createElement('button');
         editButton.className = 'alias-edit-btn';
         editButton.title = 'Editar Alias';
-        editButton.innerHTML = `
-            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/>
-            </svg>
-        `; 
+        editButton.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/></svg>`; 
         editButton.onclick = (e) => {
             e.stopPropagation(); 
             setAlias(contactId); 
@@ -846,27 +873,21 @@
         const removeButton = document.createElement('button');
         removeButton.className = 'remove-contact-btn';
         removeButton.title = 'Eliminar Contacto';
-        removeButton.innerHTML = `
-            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <path d="M3 6h18"/>
-                <path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/>
-                <path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/>
-            </svg>
-        `;
+        removeButton.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/></svg>`;
         removeButton.onclick = (e) => {
             e.stopPropagation();
             removeContact(contactId); 
         };
         actionsContainer.appendChild(removeButton);
 
+        dmItem.appendChild(avatar);
+        // En móvil, textContainer y actionsContainer se ocultan por CSS.
+        // Los mantenemos en el HTML para escritorio.
         dmItem.appendChild(textContainer);
         dmItem.appendChild(actionsContainer);
 
         dmItem.onclick = () => {
           selectDM(contactId);
-          if (window.innerWidth <= 768) {
-            toggleSidebar(); // Ocultar sidebar al seleccionar DM en móvil
-          }
         };
 
         if (String(contactId) === String(currentDM)) {
@@ -908,27 +929,51 @@
     function renderMessages(msgs) {
       const container = document.getElementById('messages');
       container.innerHTML = '';
+      const fragment = document.createDocumentFragment();
 
       for (const msg of msgs) {
         const div = document.createElement('div');
         div.className = 'message';
         
-        let senderLabel;
         const isOwnMessage = String(msg.sender) === String(userId);
-        if (isOwnMessage) {
-            senderLabel = 'Tú';
-        } else {
-            senderLabel = getAlias(msg.sender);
-        }
+        
+        // 1. Avatar
+        const initials = isOwnMessage ? 'T' : getInitials(msg.sender);
+        const avatar = document.createElement('div');
+        avatar.className = 'avatar';
+        avatar.textContent = initials;
+        div.appendChild(avatar);
 
+        // 2. Contenido del Mensaje
         const contentContainer = document.createElement('div');
         contentContainer.className = 'message-content';
 
-        const textContent = document.createElement('div');
-        textContent.innerHTML = `<span>${senderLabel}:</span> ${msg.text || ''}`;
-        contentContainer.appendChild(textContent);
+        // 2a. Info del remitente y timestamp
+        const info = document.createElement('div');
+        info.className = 'message-info';
+        
+        const senderName = document.createElement('span');
+        senderName.className = 'sender-name';
+        senderName.textContent = isOwnMessage ? 'Tú' : getAlias(msg.sender);
+        info.appendChild(senderName);
 
+        const time = document.createElement('span');
+        time.className = 'timestamp';
+        const date = msg.timestamp && msg.timestamp.toDate ? new Date(msg.timestamp.toDate()) : new Date();
+        time.textContent = date.toLocaleString();
+        info.appendChild(time);
+        
+        contentContainer.appendChild(info);
 
+        // 2b. Texto
+        if (msg.text) {
+            const textContent = document.createElement('div');
+            textContent.className = 'message-text';
+            textContent.textContent = msg.text;
+            contentContainer.appendChild(textContent);
+        }
+
+        // 2c. Imagen
         if (msg.image) {
           const img = document.createElement('img');
           img.src = msg.image;
@@ -936,34 +981,25 @@
           contentContainer.appendChild(img);
         }
 
-        const time = document.createElement('span');
-        time.className = 'timestamp';
-        const date = msg.timestamp && msg.timestamp.toDate ? new Date(msg.timestamp.toDate()) : new Date();
-        time.textContent = date.toLocaleString();
-        contentContainer.appendChild(time);
-        
         div.appendChild(contentContainer);
 
 
-        // Botón de eliminar (SOLO para mensajes propios, NUEVO)
-        if (isOwnMessage && msg.id) { // msg.id debe venir del onSnapshot
+        // 3. Botón de eliminar (SOLO para mensajes propios)
+        if (isOwnMessage && msg.id) { 
             const deleteButton = document.createElement('button');
             deleteButton.className = 'delete-message-btn';
             deleteButton.title = 'Eliminar este mensaje';
-            deleteButton.innerHTML = `
-                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                    <path d="M3 6h18"/>
-                    <path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/>
-                    <path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/>
-                </svg>
-            `;
-            deleteButton.onclick = () => deleteOwnMessage(msg.id);
+            deleteButton.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/></svg>`;
+            deleteButton.onclick = (e) => {
+                e.stopPropagation(); // Evita clics no deseados
+                deleteOwnMessage(msg.id);
+            };
             div.appendChild(deleteButton);
         }
 
-
-        container.appendChild(div);
+        fragment.appendChild(div);
       }
+      container.appendChild(fragment);
       container.scrollTop = container.scrollHeight;
     }
 
@@ -980,12 +1016,12 @@
         const chatRoomId = getDMKey(userId, currentDM);
         const chatRef = db.collection('chats').doc(chatRoomId).collection('messages');
         
-        // Aquí es importante usar snapshot.forEach para obtener el ID del documento (doc.id)
+        // Listener en tiempo real
         unsubscribeFromChat = chatRef.orderBy('timestamp').onSnapshot(snapshot => {
             const msgs = [];
             snapshot.forEach(doc => {
                 const data = doc.data();
-                data.id = doc.id; // Añadir el ID del documento para la eliminación
+                data.id = doc.id; // ID del documento para la eliminación
                 msgs.push(data);
             });
             renderMessages(msgs);
@@ -1001,8 +1037,6 @@
       const imageInput = document.getElementById('imageInput');
       const text = textInput.value.trim();
       const imageFile = imageInput.files[0];
-      
-      // Se utiliza la nueva clase 'send-button'
       const sendButton = document.querySelector('.input-area .send-button');
 
       if (!text && !imageFile) return;
@@ -1031,6 +1065,7 @@
       const saveMessageToFirebase = async (imageBase64 = null) => {
         if (imageBase64) {
             messageData.image = imageBase64;
+            messageData.text = text; // Asegura que el texto se guarde si hay imagen
         }
 
         try {
@@ -1041,8 +1076,8 @@
             imageInput.value = '';
             
         } catch (error) {
-            console.error("❌ Error al enviar el mensaje. Revisa las reglas de escritura (write rules) de Firestore:", error);
-            alert("Hubo un error al enviar el mensaje. Por favor, revisa la Consola del Navegador (F12) y las Reglas de Firebase."); 
+            console.error("❌ Error al enviar el mensaje:", error);
+            alert("Hubo un error al enviar el mensaje. Revisa la Consola del Navegador (F12) para detalles."); 
         } finally {
             sendButton.disabled = false; 
         }
@@ -1064,7 +1099,7 @@
       const targetId = targetIdInput.value.trim();
       
       if (!targetId || isNaN(targetId) || String(targetId) === String(userId)) {
-        alert('Por favor, ingresa un ID de usuario válido y diferente al tuyo.'); 
+        alert('Por favor, ingresa un ID de usuario válido y diferente al tuyo (número de 4 dígitos).'); 
         return;
       }
       
@@ -1081,13 +1116,11 @@
         db = firebase.firestore(); 
         console.log("✅ Conexión a Firebase Firestore exitosa.");
         updateDMList();
-        checkResponsiveLayout();
-        window.addEventListener('resize', checkResponsiveLayout);
         
         // Asocia el evento 'Enter' al input de mensaje para enviar
         document.getElementById('messageInput').addEventListener('keypress', (e) => {
             if (e.key === 'Enter') {
-                e.preventDefault(); // Previene salto de línea
+                e.preventDefault(); 
                 sendMessage();
             }
         });
