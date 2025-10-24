@@ -2,7 +2,7 @@
 <html lang="es">
 <head>
   <meta charset="UTF-8" />
-  <title>Fendrox</title> 
+  <title>TEST3</title> 
   
   <!-- IMPORTS DE FIREBASE (Versión 8.6.8) -->
   <script src="https://www.gstatic.com/firebasejs/8.6.8/firebase-app.js"></script>
@@ -232,7 +232,7 @@
   </div>
 
   <script>
-    // 🛑 1. CONFIGURACIÓN DE FIREBASE INTEGRADA
+    // CONFIGURACIÓN DE FIREBASE INTEGRADA
     const firebaseConfig = {
       apiKey: "AIzaSyC31C2OrmxBrl2EhXGzzdwbK-AVa-wrMzo",
       authDomain: "gifthub1-712d1.firebaseapp.com",
@@ -243,18 +243,19 @@
       appId: "1:730338818683:web:236ebee6459dd6138f00de"
     };
 
+    let db; // Variable global para Firestore
+
     // Inicializar Firebase y obtener la instancia de Firestore
     try {
         firebase.initializeApp(firebaseConfig);
-        const db = firebase.firestore(); 
-        console.log("Firebase inicializado y conectado a Firestore.");
+        db = firebase.firestore(); 
+        console.log("✅ Conexión a Firebase Firestore exitosa.");
         
-        // --- Constantes de Storage ---
+        // --- Variables y Lógica Principal ---
         const USER_ID_KEY = 'fendrox_user_id';
         const DM_CONTACTS_KEY_PREFIX = 'conclave_dm_contacts_'; 
         const ALIASES_KEY = 'fendrox_aliases'; 
 
-        // --- Inicialización del Usuario ---
         let userId = localStorage.getItem(USER_ID_KEY);
         if (!userId) {
             userId = String(Math.floor(1000 + Math.random() * 9000));
@@ -264,7 +265,7 @@
 
         let currentDM = null;
         let aliases = JSON.parse(localStorage.getItem(ALIASES_KEY) || '{}');
-        let unsubscribeFromChat = null; // Para detener la escucha de nuevos mensajes
+        let unsubscribeFromChat = null; 
 
         // --- Gestión de Alias (Nombres) ---
 
@@ -294,7 +295,6 @@
         // --- Funciones Auxiliares ---
 
         function getDMKey(id1, id2) {
-          // Ordena los IDs alfanuméricamente para tener un ID de canal único
           const sorted = [String(id1), String(id2)].sort();
           return `${sorted[0]}_${sorted[1]}`;
         }
@@ -373,20 +373,17 @@
 
         // --- Lógica de Mensajería Global (Firestore) ---
 
-        // 2. ESCUCHA EN TIEMPO REAL AL ABRIR UN DM
         function selectDM(contactId) {
             currentDM = String(contactId);
             updateModeLabel();
 
-            // Detener la escucha anterior para evitar fugas de memoria
             if (unsubscribeFromChat) {
                 unsubscribeFromChat();
             }
 
             const chatRoomId = getDMKey(userId, currentDM);
-            // La ruta es: Colección 'chats' -> Documento (ID de sala) -> Subcolección 'messages'
             const chatRef = db.collection('chats').doc(chatRoomId).collection('messages');
-
+            
             // onSnapshot() escucha los cambios en tiempo real
             unsubscribeFromChat = chatRef.orderBy('timestamp').onSnapshot(snapshot => {
                 const msgs = [];
@@ -395,11 +392,10 @@
                 });
                 renderMessages(msgs);
             }, error => {
-                console.error("Error al escuchar mensajes: ", error);
+                console.error("Error al escuchar mensajes. ¿Reglas de lectura incorrectas?", error);
             });
         }
         
-        // Función de renderizado llamada por onSnapshot
         function renderMessages(msgs) {
           const container = document.getElementById('messages');
           container.innerHTML = '';
@@ -426,7 +422,6 @@
 
             const time = document.createElement('span');
             time.className = 'timestamp';
-            // Convierte el timestamp de Firestore a Date
             const date = msg.timestamp && msg.timestamp.toDate ? new Date(msg.timestamp.toDate()) : new Date();
             time.textContent = date.toLocaleString();
             div.appendChild(time);
@@ -437,7 +432,6 @@
         }
 
 
-        // 3. ENVÍO DEL MENSAJE AL SERVIDOR DE FIREBASE
         async function sendMessage() {
           const textInput = document.getElementById('messageInput');
           const imageInput = document.getElementById('imageInput');
@@ -452,7 +446,7 @@
               return;
           }
           
-          sendButton.disabled = true; // Deshabilitar el botón durante el envío
+          sendButton.disabled = true; 
           addContact(currentDM); 
 
           const chatRoomId = getDMKey(userId, currentDM);
@@ -470,17 +464,18 @@
             }
 
             try {
-                await chatRef.add(messageData); // GUARDA EL MENSAJE en Firestore
+                await chatRef.add(messageData); 
+                console.log("✅ Mensaje enviado con éxito al chat room:", chatRoomId); // LOG DE ÉXITO
                 
                 // Limpiar inputs
                 textInput.value = '';
                 imageInput.value = '';
                 
             } catch (error) {
-                console.error("Error al enviar el mensaje:", error);
-                alert("Hubo un error al enviar el mensaje. Revisa la consola.");
+                console.error("❌ Error al enviar el mensaje. Revisa las reglas de escritura (write rules) de Firestore:", error);
+                alert("Hubo un error al enviar el mensaje. Por favor, revisa la Consola del Navegador (F12) y las Reglas de Firebase.");
             } finally {
-                sendButton.disabled = false; // Habilitar el botón después de la operación
+                sendButton.disabled = false; 
             }
           };
 
@@ -510,11 +505,12 @@
           updateDMList(); 
         }
         
-        // Iniciar: Cargar la lista de DMs al cargar la página
+        // Cargar la lista de DMs al cargar la página
         updateDMList();
 
     } catch (e) {
-        console.error("ERROR DE INICIALIZACIÓN DE FIREBASE: Asegúrate de que tu API Key sea correcta y que las reglas de Firestore permitan la escritura (allow write: if true).", e);
+        console.error("❌ ERROR CRÍTICO DE INICIALIZACIÓN DE FIREBASE. Por favor, verifica tu objeto 'firebaseConfig' y que los scripts de Firebase se hayan cargado correctamente.", e);
+        document.getElementById('messages').innerHTML = '<div style="color: red; padding: 20px;">ERROR CRÍTICO: No se pudo conectar a Firebase. Revisa la consola (F12).</div>';
     }
     
   </script>
