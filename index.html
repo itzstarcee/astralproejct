@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Fendrox Online</title> 
+  <title>Fendrox Móvil</title> 
   
   <!-- IMPORTS DE FIREBASE (Versión 8.6.8) -->
   <script src="https://www.gstatic.com/firebasejs/8.6.8/firebase-app.js"></script>
@@ -23,19 +23,50 @@
       overflow: hidden; 
     }
 
+    /* CONTENEDOR PRINCIPAL: Flex para Sidebar y Chat */
+    .app-container {
+        display: flex;
+        flex: 1;
+    }
+
     /* BARRA DE CANALES/CONTACTOS (Diseño de Escritorio) */
     .sidebar {
       width: 260px;
       flex-shrink: 0;
       background-color: #202225;
-      padding: 15px;
+      padding: 0 15px 15px 15px; /* Ajuste para mover el padding al contenedor de contenido */
       box-sizing: border-box;
       display: flex;
       flex-direction: column;
       border-right: 1px solid #2f3136; 
       transition: transform 0.3s ease; /* Para animación móvil */
     }
-    
+
+    /* Contenido de la barra lateral (excluyendo el header y el footer) */
+    .sidebar-content {
+        flex-grow: 1;
+        overflow-y: hidden;
+        display: flex;
+        flex-direction: column;
+        padding-top: 15px;
+    }
+
+    /* HEADER del Sidebar */
+    .sidebar h2 {
+      margin-top: 0;
+      margin-bottom: 20px;
+      color: #ffffff;
+      font-size: 24px;
+      font-weight: 800;
+      letter-spacing: -0.5px;
+      border-bottom: 2px solid #2b2d31;
+      padding: 15px 0 10px 0;
+      background-color: #202225;
+      position: sticky;
+      top: 0;
+      z-index: 10;
+    }
+
     /* CHAT PRINCIPAL */
     .chat {
       flex: 1;
@@ -45,35 +76,48 @@
       box-sizing: border-box;
       min-width: 0; 
       background-color: #2f3136;
-      position: relative; /* Necesario para el overlay de móvil */
+      position: relative; 
     }
 
     /* ------------------------------ */
     /* ESTILOS DE CONTACTOS/SIDEBAR (Contenido) */
     /* ------------------------------ */
 
-    .sidebar h2 {
-      margin-top: 0;
-      margin-bottom: 20px;
-      color: #ffffff;
-      font-size: 24px;
-      font-weight: 800;
-      letter-spacing: -0.5px;
-      border-bottom: 2px solid #2b2d31;
-      padding-bottom: 10px;
-    }
-
     .section-title {
-      margin-top: 15px;
+      margin-top: 20px;
       margin-bottom: 5px;
       font-size: 11px;
-      color: #b9bbbe;
+      color: #949ba4; /* Color más suave */
       text-transform: uppercase;
-      font-weight: 600;
+      font-weight: 700; /* Más audaz */
+      letter-spacing: 0.5px;
     }
 
+    /* Contenedor de perfil/ID (FOOTER) */
+    .user-profile-bar {
+        margin-top: auto; /* Empuja hacia abajo */
+        background-color: #1e1f22; /* Fondo más oscuro para destacar */
+        padding: 10px;
+        margin: 0 -15px -15px -15px; /* Extiende a los bordes del sidebar */
+        border-top: 1px solid #2b2d31;
+    }
+
+    .user-profile-bar .dm-item {
+        margin: 0;
+        padding: 5px;
+        background-color: #1e1f22;
+    }
+
+    .user-profile-bar .id-display {
+        font-size: 10px;
+        color: #8e9297; 
+        margin-top: 2px;
+    }
+
+
+    /* Sección de controles de DM */
     .dm-controls {
-        padding-bottom: 10px;
+        padding-bottom: 15px;
         border-bottom: 1px solid #2b2d31;
     }
 
@@ -81,11 +125,16 @@
       width: 100%;
       margin-bottom: 10px;
       padding: 10px;
-      border: none;
+      border: 1px solid #36393f; /* Borde más visible */
       border-radius: 8px;
-      background-color: #36393f; 
+      background-color: #40444b; /* Fondo más claro que el sidebar */
       color: white;
-      box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.3);
+      box-shadow: none;
+      transition: border-color 0.2s;
+    }
+    .dm-controls input:focus {
+        border-color: #5865f2;
+        background-color: #36393f;
     }
     
     .dm-controls button {
@@ -95,7 +144,7 @@
       border-radius: 8px;
       background-color: #5865f2;
       color: white;
-      font-weight: 600;
+      font-weight: 700;
       cursor: pointer;
       transition: background-color 0.2s, transform 0.1s;
     }
@@ -114,6 +163,7 @@
       scrollbar-width: thin;
       scrollbar-color: #2b2d31 #202225;
     }
+    /* Estilos de scrollbar (Webkit) */
     .dm-list::-webkit-scrollbar {
         width: 8px;
     }
@@ -146,6 +196,7 @@
     .dm-item.active {
       background-color: #40444b;
       color: white;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
     }
     
     .dm-item .id-display {
@@ -185,10 +236,11 @@
         font-size: 18px;
         flex-shrink: 0;
         margin-right: 10px;
+        box-shadow: 0 0 5px rgba(0, 0, 0, 0.2);
     }
     
     /* ------------------------------ */
-    /* CHAT HEADER & MESSAGES */
+    /* CHAT HEADER & MESSAGES (Se mantienen) */
     /* ------------------------------ */
 
     .chat-header {
@@ -303,7 +355,7 @@
     }
 
     /* ------------------------------ */
-    /* AREA DE INPUT Y BOTONES */
+    /* AREA DE INPUT Y BOTONES (Se mantienen) */
     /* ------------------------------ */
     .input-area {
       display: flex;
@@ -313,6 +365,7 @@
       background-color: #36393f;
       border-radius: 8px;
       box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+      margin-top: 15px;
     }
 
     .input-area input[type="text"] {
@@ -389,6 +442,7 @@
             z-index: 50; 
             transform: translateX(-100%);
             box-shadow: 2px 0 10px rgba(0, 0, 0, 0.5);
+            padding-bottom: 0; /* Remove padding-bottom to avoid scroll issues */
         }
         
         /* Muestra la barra lateral cuando tiene la clase 'active' */
@@ -418,7 +472,7 @@
             width: 100vw;
             height: 100vh;
             background-color: rgba(0, 0, 0, 0.7);
-            z-index: 40; /* Debe estar entre el sidebar (50) y el chat (1) */
+            z-index: 40; 
         }
         .overlay-mobile.active {
             display: block;
@@ -538,24 +592,30 @@
   
   <div class="sidebar" id="sidebar">
     <h2>Fendrox</h2>
-    <div class="section-title">Tu ID</div>
-    <div class="dm-item" style="cursor:default; padding: 10px; margin-bottom: 15px; align-items: flex-start;">
-        <div class="avatar">T</div>
-        <div>
-            <div style="color:white; font-weight:600;">Tu ID</div>
-            <div class="id-display" id="userId"></div>
+    
+    <div class="sidebar-content">
+        <!-- SECCIÓN DE NUEVO DM Y CONTACTOS -->
+        <div class="section-title">Enviar DM</div>
+        <div class="dm-controls">
+          <input type="text" id="dmTargetId" placeholder="ID del usuario a contactar" />
+          <button onclick="startDM()">Abrir DM</button>
+        </div>
+    
+        <div class="section-title">Contactos Recientes</div>
+        <div id="dmList" class="dm-list">
+            <!-- Los contactos se inyectarán aquí -->
         </div>
     </div>
 
-    <div class="section-title">Enviar DM</div>
-    <div class="dm-controls">
-      <input type="text" id="dmTargetId" placeholder="ID del usuario a contactar" />
-      <button onclick="startDM()">Abrir DM</button>
-    </div>
-
-    <div class="section-title">Contactos Recientes</div>
-    <div id="dmList" class="dm-list">
-        <!-- Los contactos se inyectarán aquí -->
+    <!-- SECCIÓN DE PERFIL (Footer) -->
+    <div class="user-profile-bar">
+        <div class="dm-item" style="cursor:default; align-items: flex-start;">
+            <div class="avatar">T</div>
+            <div>
+                <div style="color:white; font-weight:600;">Tu ID</div>
+                <div class="id-display" id="userId"></div>
+            </div>
+        </div>
     </div>
   </div>
   
@@ -652,7 +712,11 @@
 
         // Toggle del overlay y del scroll del body (para evitar el desplazamiento del fondo)
         overlay.classList.toggle('active', isActive);
-        document.body.style.overflow = isActive ? 'hidden' : 'auto';
+        // Ajuste para permitir el scroll en el body solo cuando no está activo
+        document.body.style.overflow = isActive && window.innerWidth <= 768 ? 'hidden' : 'hidden'; 
+        if (!isActive) {
+            document.body.style.overflow = 'hidden'; // Asegura que el scroll se mantenga oculto
+        }
     }
 
 
