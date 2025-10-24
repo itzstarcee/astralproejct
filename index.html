@@ -2,7 +2,7 @@
 <html lang="es">
 <head>
   <meta charset="UTF-8" />
-  <title>Conclave</title>
+  <title>Fendrox</title> 
   <style>
     body {
       margin: 0;
@@ -23,6 +23,7 @@
     }
 
     .sidebar h2 {
+      /* CAMBIO REALIZADO TAMBIÉN AQUÍ para reflejar el nuevo nombre en la barra lateral */
       margin-bottom: 10px;
       color: #ffffff;
       font-size: 22px;
@@ -60,8 +61,8 @@
 
     .dm-list {
       margin-top: 10px;
-      overflow-y: auto; /* Permite desplazamiento si hay muchos DMs */
-      flex-grow: 1; /* Permite que la lista crezca */
+      overflow-y: auto;
+      flex-grow: 1;
     }
 
     .dm-item {
@@ -72,7 +73,7 @@
       cursor: pointer;
     }
 
-    .dm-item.active { /* Estilo para el DM activo */
+    .dm-item.active {
       background-color: #5b6eae;
       color: white;
     }
@@ -180,7 +181,7 @@
 </head>
 <body>
   <div class="sidebar">
-    <h2>Conclave</h2>
+    <h2>Fendrox</h2>
     <div class="section-title">Tu ID</div>
     <div class="dm-item" style="cursor:default;">Anonymous (<span id="userId"></span>)</div>
 
@@ -216,6 +217,7 @@
     document.getElementById('userId').textContent = userId;
 
     let currentDM = null;
+    // Se mantiene el nombre de la clave 'conclave' en localStorage para evitar perder datos de DMs anteriores
     const DM_CONTACTS_KEY = `conclave_dm_contacts_${userId}`;
 
     // --- Funciones Auxiliares ---
