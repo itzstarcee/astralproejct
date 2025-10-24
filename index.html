@@ -9,6 +9,9 @@
   <script src="https://www.gstatic.com/firebasejs/8.6.8/firebase-firestore.js"></script>
 
   <style>
+    /* ------------------------------ */
+    /* ESTILOS BASE */
+    /* ------------------------------ */
     body {
       margin: 0;
       font-family: 'Segoe UI', sans-serif;
@@ -18,6 +21,9 @@
       color: #dcddde;
     }
 
+    /* ------------------------------ */
+    /* SIDEBAR Y LISTA DE DMs */
+    /* ------------------------------ */
     .sidebar {
       width: 260px;
       background-color: #2f3136;
@@ -57,6 +63,7 @@
       color: white;
       font-weight: bold;
       cursor: pointer;
+      transition: background-color 0.2s;
     }
 
     .dm-controls button:hover {
@@ -78,6 +85,7 @@
       display: flex;
       justify-content: space-between;
       align-items: center;
+      transition: background-color 0.2s;
     }
 
     .dm-item.active {
@@ -101,12 +109,13 @@
       color: #7289da;
       cursor: pointer;
       font-size: 16px;
-      padding: 0 4px; /* Ajuste para los iconos */
+      padding: 0 4px; 
       line-height: 1;
+      transition: color 0.2s;
     }
     
     .dm-item .remove-contact-btn {
-        color: #f04747; /* Rojo para eliminar */
+        color: #f04747; 
     }
 
     .dm-item.active .alias-edit-btn {
@@ -114,7 +123,7 @@
     }
 
     .dm-item.active .remove-contact-btn {
-      color: #f04747; 
+      color: #ff6e6e; /* Rojo más brillante en estado activo */
     }
 
     .dm-item .id-display {
@@ -122,6 +131,9 @@
         color: #b9bbbe;
     }
 
+    /* ------------------------------ */
+    /* CHAT Y MENSAJES */
+    /* ------------------------------ */
     .chat {
       flex: 1;
       display: flex;
@@ -186,26 +198,17 @@
       border-radius: 6px;
       cursor: pointer;
       font-size: 14px;
+      display: flex;
+      align-items: center;
+    }
+    .input-area label svg {
+        margin-right: 5px;
     }
 
     .input-area input[type="file"] {
       display: none;
     }
-
-    .input-area button {
-      padding: 10px;
-      border: none;
-      border-radius: 6px;
-      background-color: #7289da;
-      color: white;
-      font-weight: bold;
-      cursor: pointer;
-    }
-
-    .input-area button:hover {
-      background-color: #5b6eae;
-    }
-
+    
     .active-mode {
       margin-bottom: 10px;
       font-size: 14px;
@@ -217,6 +220,110 @@
       margin-top: 8px;
       border-radius: 6px;
     }
+
+    /* ------------------------------ */
+    /* ESTILOS MODAL (NUEVO) */
+    /* ------------------------------ */
+    .modal-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background-color: rgba(0, 0, 0, 0.8);
+      display: none; /* Oculto por defecto */
+      justify-content: center;
+      align-items: center;
+      z-index: 1000;
+      opacity: 0;
+      transition: opacity 0.2s ease;
+    }
+
+    .modal-overlay.active {
+      display: flex;
+      opacity: 1;
+    }
+
+    .modal-content {
+      background-color: #36393f;
+      padding: 30px;
+      border-radius: 10px;
+      width: 90%;
+      max-width: 450px;
+      box-shadow: 0 5px 15px rgba(0, 0, 0, 0.5);
+      text-align: center;
+    }
+
+    .modal-icon-container {
+      margin-bottom: 20px;
+    }
+    .modal-icon-container svg {
+      color: #f04747; /* Rojo para advertencia/delete */
+    }
+
+    .modal-title {
+      font-size: 24px;
+      font-weight: bold;
+      color: white;
+      margin-bottom: 10px;
+    }
+
+    .modal-message {
+      color: #dcddde;
+      margin-bottom: 25px;
+      line-height: 1.5;
+    }
+    
+    .modal-input {
+      width: 100%;
+      padding: 10px;
+      margin-bottom: 20px;
+      border: 1px solid #40444b;
+      border-radius: 6px;
+      background-color: #40444b;
+      color: white;
+      box-sizing: border-box;
+    }
+
+    .modal-actions {
+      display: flex;
+      justify-content: flex-end;
+      gap: 15px;
+    }
+
+    .modal-btn {
+      padding: 10px 20px;
+      border: none;
+      border-radius: 6px;
+      font-weight: bold;
+      cursor: pointer;
+      transition: background-color 0.2s;
+    }
+
+    .btn-cancel {
+      background-color: #40444b;
+      color: white;
+    }
+    .btn-cancel:hover {
+        background-color: #50545b;
+    }
+
+    .btn-primary {
+      background-color: #7289da; /* Azul principal */
+      color: white;
+    }
+    .btn-primary:hover {
+        background-color: #5b6eae;
+    }
+
+    .btn-danger {
+        background-color: #f04747; /* Rojo para acciones destructivas */
+        color: white;
+    }
+    .btn-danger:hover {
+        background-color: #c93c3c;
+    }
+
   </style>
 </head>
 <body>
@@ -241,7 +348,7 @@
     <div class="input-area">
       <input type="text" id="messageInput" placeholder="Escribe tu mensaje..." />
       <label for="imageInput">
-        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: middle; margin-right: 5px;">
+        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: middle;">
             <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
             <circle cx="8.5" cy="8.5" r="1.5"></circle>
             <polyline points="21 15 16 10 5 21"></polyline>
@@ -252,6 +359,22 @@
       <button onclick="sendMessage()">Enviar</button>
     </div>
   </div>
+
+  <!-- MODAL GLOBAL PERSONALIZADO (NUEVO) -->
+  <div id="customModal" class="modal-overlay">
+    <div class="modal-content">
+      <div id="modalIcon" class="modal-icon-container">
+        <!-- Icono se inyecta aquí -->
+      </div>
+      <div id="modalTitle" class="modal-title"></div>
+      <div id="modalMessage" class="modal-message"></div>
+      <input type="text" id="modalInput" class="modal-input" placeholder="Escribe aquí..." style="display:none;">
+      <div id="modalActions" class="modal-actions">
+        <!-- Botones se inyectan aquí -->
+      </div>
+    </div>
+  </div>
+
 
   <script>
     // CONFIGURACIÓN DE FIREBASE INTEGRADA
@@ -265,7 +388,7 @@
       appId: "1:730338818683:web:236ebee6459dd6138f00de"
     };
 
-    let db; // Variable global para Firestore
+    let db; 
 
     // --- Variables y Lógica Principal (Definidas globalmente) ---
     const USER_ID_KEY = 'fendrox_user_id';
@@ -274,8 +397,9 @@
 
     let userId = localStorage.getItem(USER_ID_KEY);
     
-    // 1. EL ID DEL USUARIO SE MANTIENE AL RECARGAR
+    // El ID del usuario se mantiene al recargar (si existe)
     if (!userId) {
+        // Generar un ID simple de 4 dígitos para el ejemplo
         userId = String(Math.floor(1000 + Math.random() * 9000));
         localStorage.setItem(USER_ID_KEY, userId);
     }
@@ -284,6 +408,121 @@
     let currentDM = null;
     let aliases = JSON.parse(localStorage.getItem(ALIASES_KEY) || '{}');
     let unsubscribeFromChat = null; 
+
+    // --- FUNCIONES DE MODAL PERSONALIZADO (NUEVAS) ---
+
+    // Icono de Papelera SVG (para el modal de confirmación)
+    const TRASH_SVG = `
+        <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#f04747" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M3 6h18"/>
+            <path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/>
+            <path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/>
+        </svg>
+    `;
+
+    // Icono de Lápiz SVG (para el modal de input)
+    const PENCIL_SVG = `
+        <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#7289da" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/>
+        </svg>
+    `;
+
+    // Función principal para mostrar el modal y manejar los callbacks
+    function showCustomModal(type, title, message, callback, defaultValue = '') {
+      const modal = document.getElementById('customModal');
+      const modalTitle = document.getElementById('modalTitle');
+      const modalMessage = document.getElementById('modalMessage');
+      const modalInput = document.getElementById('modalInput');
+      const modalActions = document.getElementById('modalActions');
+      const modalIcon = document.getElementById('modalIcon');
+
+      // Limpiar y configurar elementos
+      modalTitle.textContent = title;
+      modalMessage.textContent = message;
+      modalActions.innerHTML = '';
+      modalInput.style.display = 'none';
+      modalIcon.innerHTML = '';
+
+
+      // Configurar según el tipo de modal
+      if (type === 'alert') {
+        modalIcon.innerHTML = ''; // Sin icono en alerta simple
+        
+        const okButton = document.createElement('button');
+        okButton.className = 'modal-btn btn-primary';
+        okButton.textContent = 'Aceptar';
+        okButton.onclick = () => {
+          modal.classList.remove('active');
+          if (callback) callback(true);
+        };
+        modalActions.appendChild(okButton);
+
+      } else if (type === 'confirm') {
+        modalIcon.innerHTML = TRASH_SVG; 
+        
+        const cancelButton = document.createElement('button');
+        cancelButton.className = 'modal-btn btn-cancel';
+        cancelButton.textContent = 'Cancelar';
+        cancelButton.onclick = () => modal.classList.remove('active');
+        
+        const confirmButton = document.createElement('button');
+        confirmButton.className = 'modal-btn btn-danger';
+        confirmButton.textContent = 'Eliminar';
+        confirmButton.onclick = () => {
+          modal.classList.remove('active');
+          if (callback) callback(true);
+        };
+        
+        modalActions.appendChild(cancelButton);
+        modalActions.appendChild(confirmButton);
+
+      } else if (type === 'input') {
+        modalIcon.innerHTML = PENCIL_SVG; 
+        
+        modalInput.style.display = 'block';
+        modalInput.value = defaultValue;
+        modalInput.focus();
+        
+        const cancelButton = document.createElement('button');
+        cancelButton.className = 'modal-btn btn-cancel';
+        cancelButton.textContent = 'Cancelar';
+        cancelButton.onclick = () => modal.classList.remove('active');
+        
+        const saveButton = document.createElement('button');
+        saveButton.className = 'modal-btn btn-primary';
+        saveButton.textContent = 'Guardar';
+        saveButton.onclick = () => {
+          modal.classList.remove('active');
+          if (callback) callback(modalInput.value);
+        };
+
+        // Permitir guardar con Enter
+        modalInput.onkeypress = (e) => {
+            if (e.key === 'Enter') saveButton.click();
+        };
+
+        modalActions.appendChild(cancelButton);
+        modalActions.appendChild(saveButton);
+      }
+
+      // Mostrar el modal
+      modal.classList.add('active');
+    }
+
+    // Función de reemplazo para alert
+    window.alert = (message) => {
+        showCustomModal('alert', 'Aviso', message);
+    };
+
+    // Función de reemplazo para confirm (no usada, pero buena práctica)
+    // window.confirm = (message) => {
+    //     return new Promise(resolve => showCustomModal('confirm', 'Confirmación', message, resolve));
+    // };
+
+    // Función de reemplazo para prompt (no usada, pero buena práctica)
+    // window.prompt = (message, defaultValue = '') => {
+    //     return new Promise(resolve => showCustomModal('input', 'Ingresar valor', message, resolve, defaultValue));
+    // };
 
     // --- Funciones Auxiliares ---
     function getDMKey(id1, id2) {
@@ -300,46 +539,61 @@
         localStorage.setItem(ALIASES_KEY, JSON.stringify(aliases));
     }
 
+    // MODAL para editar alias (reemplaza 'prompt')
     function setAlias(id) {
         const currentName = getAlias(id);
-        const newAlias = prompt(`Ingresa un nuevo nombre/alias para el usuario ${id} (actual: ${currentName}):`);
         
-        if (newAlias && newAlias.trim() !== "") {
-            saveAlias(id, newAlias.trim());
-            updateDMList(); 
-            if (String(currentDM) === String(id)) {
-                updateModeLabel(); 
-            }
-        }
+        showCustomModal(
+            'input', 
+            'Editar Alias', 
+            `Ingresa un nuevo nombre/alias para el usuario ${id}:`, 
+            (newAlias) => {
+                if (newAlias && newAlias.trim() !== "" && newAlias !== currentName) {
+                    saveAlias(id, newAlias.trim());
+                    updateDMList(); 
+                    if (String(currentDM) === String(id)) {
+                        updateModeLabel(); 
+                    }
+                }
+            }, 
+            currentName 
+        );
     }
     
-    // NUEVA FUNCIÓN: Eliminar contacto
+    // MODAL para eliminar contacto (reemplaza 'confirm')
     function removeContact(contactId) {
-        if (!confirm(`¿Estás seguro de que quieres eliminar a ${getAlias(contactId)} (${contactId}) de tus contactos?`)) {
-            return;
-        }
+        const alias = getAlias(contactId);
 
-        let contactsKey = DM_CONTACTS_KEY_PREFIX + userId;
-        let contacts = JSON.parse(localStorage.getItem(contactsKey) || '[]');
-        contactId = String(contactId);
+        showCustomModal(
+            'confirm',
+            'Eliminar Contacto',
+            `¿Estás seguro de que quieres eliminar a ${alias} (${contactId}) de tus contactos?`,
+            (confirmed) => {
+                if (!confirmed) return;
+                
+                let contactsKey = DM_CONTACTS_KEY_PREFIX + userId;
+                let contacts = JSON.parse(localStorage.getItem(contactsKey) || '[]');
+                contactId = String(contactId);
 
-        const index = contacts.indexOf(contactId);
-        if (index > -1) {
-            contacts.splice(index, 1);
-            localStorage.setItem(contactsKey, JSON.stringify(contacts));
-        }
-        
-        // Si el chat eliminado estaba abierto, cerrarlo
-        if (String(currentDM) === String(contactId)) {
-            currentDM = null;
-            if (unsubscribeFromChat) {
-                unsubscribeFromChat();
-                document.getElementById('messages').innerHTML = ''; // Limpiar mensajes
+                const index = contacts.indexOf(contactId);
+                if (index > -1) {
+                    contacts.splice(index, 1);
+                    localStorage.setItem(contactsKey, JSON.stringify(contacts));
+                }
+                
+                // Si el chat eliminado estaba abierto, cerrarlo
+                if (String(currentDM) === String(contactId)) {
+                    currentDM = null;
+                    if (unsubscribeFromChat) {
+                        unsubscribeFromChat();
+                        document.getElementById('messages').innerHTML = ''; // Limpiar mensajes
+                    }
+                    updateModeLabel();
+                }
+                
+                updateDMList();
             }
-            updateModeLabel();
-        }
-        
-        updateDMList();
+        );
     }
 
 
@@ -396,6 +650,7 @@
         // Icono de Lápiz (Editar Alias)
         const editButton = document.createElement('button');
         editButton.className = 'alias-edit-btn';
+        editButton.title = 'Editar Alias';
         editButton.innerHTML = `
             <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                 <path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/>
@@ -403,13 +658,14 @@
         `; 
         editButton.onclick = (e) => {
             e.stopPropagation(); 
-            setAlias(contactId);
+            setAlias(contactId); // Ahora llama a la función con modal
         };
         actionsContainer.appendChild(editButton);
         
-        // NUEVO: Icono de Papelera (Eliminar Contacto)
+        // Icono de Papelera (Eliminar Contacto)
         const removeButton = document.createElement('button');
         removeButton.className = 'remove-contact-btn';
+        removeButton.title = 'Eliminar Contacto';
         removeButton.innerHTML = `
             <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                 <path d="M3 6h18"/>
@@ -419,7 +675,7 @@
         `;
         removeButton.onclick = (e) => {
             e.stopPropagation();
-            removeContact(contactId);
+            removeContact(contactId); // Ahora llama a la función con modal
         };
         actionsContainer.appendChild(removeButton);
 
@@ -509,12 +765,12 @@
 
       if (!text && !imageFile) return;
       if (!currentDM) {
-          alert('Debes abrir un DM primero.');
+          alert('Debes abrir un DM primero.'); // Usa la nueva alerta personalizada
           return;
       }
       if (!db) {
         console.error("Firestore no está inicializado.");
-        alert("Error de conexión: Firestore no está listo.");
+        alert("Error de conexión: Firestore no está listo."); // Usa la nueva alerta personalizada
         return;
       }
       
@@ -544,7 +800,7 @@
             
         } catch (error) {
             console.error("❌ Error al enviar el mensaje. Revisa las reglas de escritura (write rules) de Firestore:", error);
-            alert("Hubo un error al enviar el mensaje. Por favor, revisa la Consola del Navegador (F12) y las Reglas de Firebase.");
+            alert("Hubo un error al enviar el mensaje. Por favor, revisa la Consola del Navegador (F12) y las Reglas de Firebase."); // Usa la nueva alerta personalizada
         } finally {
             sendButton.disabled = false; 
         }
@@ -566,7 +822,7 @@
       const targetId = targetIdInput.value.trim();
       
       if (!targetId || isNaN(targetId) || String(targetId) === String(userId)) {
-        alert('Por favor, ingresa un ID de usuario válido y diferente al tuyo.');
+        alert('Por favor, ingresa un ID de usuario válido y diferente al tuyo.'); // Usa la nueva alerta personalizada
         return;
       }
       
