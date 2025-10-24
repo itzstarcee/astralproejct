@@ -2,7 +2,7 @@
 <html lang="es">
 <head>
   <meta charset="UTF-8" />
-  <title>TEST3</title> 
+  <title>Fendrox</title> 
   
   <!-- IMPORTS DE FIREBASE (Versión 8.6.8) -->
   <script src="https://www.gstatic.com/firebasejs/8.6.8/firebase-app.js"></script>
@@ -245,269 +245,268 @@
 
     let db; // Variable global para Firestore
 
-    // Inicializar Firebase y obtener la instancia de Firestore
+    // --- Variables y Lógica Principal (Definidas globalmente) ---
+    const USER_ID_KEY = 'fendrox_user_id';
+    const DM_CONTACTS_KEY_PREFIX = 'conclave_dm_contacts_'; 
+    const ALIASES_KEY = 'fendrox_aliases'; 
+
+    let userId = localStorage.getItem(USER_ID_KEY);
+    if (!userId) {
+        userId = String(Math.floor(1000 + Math.random() * 9000));
+        localStorage.setItem(USER_ID_KEY, userId);
+    }
+    document.getElementById('userId').textContent = `Tu ID: ${userId}`;
+
+    let currentDM = null;
+    let aliases = JSON.parse(localStorage.getItem(ALIASES_KEY) || '{}');
+    let unsubscribeFromChat = null; 
+
+    // --- Funciones Auxiliares ---
+    function getDMKey(id1, id2) {
+      const sorted = [String(id1), String(id2)].sort();
+      return `${sorted[0]}_${sorted[1]}`;
+    }
+
+    function getAlias(id) {
+        return aliases[id] || `ID ${id}`;
+    }
+
+    function saveAlias(id, name) {
+        aliases[id] = name;
+        localStorage.setItem(ALIASES_KEY, JSON.stringify(aliases));
+    }
+
+    function setAlias(id) {
+        const currentName = getAlias(id);
+        const newAlias = prompt(`Ingresa un nuevo nombre/alias para el usuario ${id} (actual: ${currentName}):`);
+        
+        if (newAlias && newAlias.trim() !== "") {
+            saveAlias(id, newAlias.trim());
+            updateDMList(); 
+            if (String(currentDM) === String(id)) {
+                updateModeLabel(); 
+            }
+        }
+    }
+
+    function addContact(contactId) {
+      if (String(contactId) === String(userId)) return;
+      let contactsKey = DM_CONTACTS_KEY_PREFIX + userId;
+      let contacts = JSON.parse(localStorage.getItem(contactsKey) || '[]');
+      contactId = String(contactId);
+
+      if (!contacts.includes(contactId)) {
+        contacts.push(contactId);
+        localStorage.setItem(contactsKey, JSON.stringify(contacts));
+      }
+    }
+
+    function updateModeLabel() {
+      const label = document.getElementById('activeModeLabel');
+      if (currentDM) {
+        const alias = getAlias(currentDM);
+        label.textContent = `DM con ${alias} (${currentDM})`;
+      } else {
+        label.textContent = 'Ningún DM abierto';
+      }
+      document.querySelectorAll('.dm-item').forEach(item => {
+        item.classList.remove('active');
+        if (item.dataset.id === currentDM) {
+          item.classList.add('active');
+        }
+      });
+    }
+
+    function updateDMList() {
+      const listContainer = document.getElementById('dmList');
+      listContainer.innerHTML = ''; 
+      
+      const contactsKey = DM_CONTACTS_KEY_PREFIX + userId;
+      const contacts = JSON.parse(localStorage.getItem(contactsKey) || '[]');
+
+      for (const contactId of contacts) {
+        if (String(contactId) === String(userId)) continue; 
+
+        const alias = getAlias(contactId);
+
+        const dmItem = document.createElement('div');
+        dmItem.className = 'dm-item';
+        dmItem.dataset.id = contactId;
+        
+        const textContainer = document.createElement('div');
+        textContainer.innerHTML = `<div>${alias}</div><div class="id-display">ID: ${contactId}</div>`;
+
+        const editButton = document.createElement('button');
+        editButton.className = 'alias-edit-btn';
+        editButton.textContent = '✏️';
+        editButton.onclick = (e) => {
+            e.stopPropagation(); 
+            setAlias(contactId);
+        };
+
+        dmItem.appendChild(textContainer);
+        dmItem.appendChild(editButton);
+
+        dmItem.onclick = () => {
+          selectDM(contactId);
+        };
+
+        if (String(contactId) === String(currentDM)) {
+            dmItem.classList.add('active');
+        }
+
+        listContainer.appendChild(dmItem);
+      }
+    }
+
+    function renderMessages(msgs) {
+      const container = document.getElementById('messages');
+      container.innerHTML = '';
+
+      for (const msg of msgs) {
+        const div = document.createElement('div');
+        div.className = 'message';
+        
+        let senderLabel;
+        if (String(msg.sender) === String(userId)) {
+            senderLabel = 'Tú';
+        } else {
+            senderLabel = getAlias(msg.sender);
+        }
+
+        div.innerHTML = `<span>${senderLabel}:</span> ${msg.text || ''}`;
+
+        if (msg.image) {
+          const img = document.createElement('img');
+          img.src = msg.image;
+          img.className = 'chat-image';
+          div.appendChild(img);
+        }
+
+        const time = document.createElement('span');
+        time.className = 'timestamp';
+        const date = msg.timestamp && msg.timestamp.toDate ? new Date(msg.timestamp.toDate()) : new Date();
+        time.textContent = date.toLocaleString();
+        div.appendChild(time);
+
+        container.appendChild(div);
+      }
+      container.scrollTop = container.scrollHeight;
+    }
+
+    function selectDM(contactId) {
+        if (!db) return console.error("Firestore no está inicializado.");
+        
+        currentDM = String(contactId);
+        updateModeLabel();
+
+        if (unsubscribeFromChat) {
+            unsubscribeFromChat();
+        }
+
+        const chatRoomId = getDMKey(userId, currentDM);
+        const chatRef = db.collection('chats').doc(chatRoomId).collection('messages');
+        
+        unsubscribeFromChat = chatRef.orderBy('timestamp').onSnapshot(snapshot => {
+            const msgs = [];
+            snapshot.forEach(doc => {
+                msgs.push(doc.data());
+            });
+            renderMessages(msgs);
+        }, error => {
+            console.error("Error al escuchar mensajes. ¿Reglas de lectura incorrectas?", error);
+        });
+    }
+    
+    // --- FUNCIONES LLAMADAS DESDE HTML (AHORA GLOBALES) ---
+    
+    // 1. Enviar Mensaje
+    async function sendMessage() {
+      const textInput = document.getElementById('messageInput');
+      const imageInput = document.getElementById('imageInput');
+      const text = textInput.value.trim();
+      const imageFile = imageInput.files[0];
+      
+      const sendButton = document.querySelector('.input-area button');
+
+      if (!text && !imageFile) return;
+      if (!currentDM) {
+          alert('Debes abrir un DM primero.');
+          return;
+      }
+      if (!db) {
+        console.error("Firestore no está inicializado.");
+        alert("Error de conexión: Firestore no está listo.");
+        return;
+      }
+      
+      sendButton.disabled = true; 
+      addContact(currentDM); 
+
+      const chatRoomId = getDMKey(userId, currentDM);
+      const chatRef = db.collection('chats').doc(chatRoomId).collection('messages');
+      
+      const messageData = { 
+          sender: userId, 
+          text: text, 
+          timestamp: firebase.firestore.FieldValue.serverTimestamp() 
+      };
+
+      const saveMessageToFirebase = async (imageBase64 = null) => {
+        if (imageBase64) {
+            messageData.image = imageBase64;
+        }
+
+        try {
+            await chatRef.add(messageData); 
+            console.log("✅ Mensaje enviado con éxito al chat room:", chatRoomId);
+            
+            textInput.value = '';
+            imageInput.value = '';
+            
+        } catch (error) {
+            console.error("❌ Error al enviar el mensaje. Revisa las reglas de escritura (write rules) de Firestore:", error);
+            alert("Hubo un error al enviar el mensaje. Por favor, revisa la Consola del Navegador (F12) y las Reglas de Firebase.");
+        } finally {
+            sendButton.disabled = false; 
+        }
+      };
+
+      if (imageFile) {
+        const reader = new FileReader();
+        reader.onload = function (e) {
+          saveMessageToFirebase(e.target.result);
+        };
+        reader.readAsDataURL(imageFile);
+      } else {
+        await saveMessageToFirebase();
+      }
+    }
+
+    // 2. Abrir DM
+    function startDM() {
+      const targetIdInput = document.getElementById('dmTargetId');
+      const targetId = targetIdInput.value.trim();
+      
+      if (!targetId || isNaN(targetId) || String(targetId) === String(userId)) {
+        alert('Por favor, ingresa un ID de usuario válido y diferente al tuyo.');
+        return;
+      }
+      
+      addContact(targetId);
+      selectDM(targetId);
+      targetIdInput.value = ''; 
+      updateDMList(); 
+    }
+
+    // --- Lógica de Inicialización ---
+
     try {
         firebase.initializeApp(firebaseConfig);
         db = firebase.firestore(); 
         console.log("✅ Conexión a Firebase Firestore exitosa.");
-        
-        // --- Variables y Lógica Principal ---
-        const USER_ID_KEY = 'fendrox_user_id';
-        const DM_CONTACTS_KEY_PREFIX = 'conclave_dm_contacts_'; 
-        const ALIASES_KEY = 'fendrox_aliases'; 
-
-        let userId = localStorage.getItem(USER_ID_KEY);
-        if (!userId) {
-            userId = String(Math.floor(1000 + Math.random() * 9000));
-            localStorage.setItem(USER_ID_KEY, userId);
-        }
-        document.getElementById('userId').textContent = `Tu ID: ${userId}`;
-
-        let currentDM = null;
-        let aliases = JSON.parse(localStorage.getItem(ALIASES_KEY) || '{}');
-        let unsubscribeFromChat = null; 
-
-        // --- Gestión de Alias (Nombres) ---
-
-        function getAlias(id) {
-            return aliases[id] || `ID ${id}`;
-        }
-
-        function saveAlias(id, name) {
-            aliases[id] = name;
-            localStorage.setItem(ALIASES_KEY, JSON.stringify(aliases));
-        }
-
-        function setAlias(id) {
-            const currentName = getAlias(id);
-            const newAlias = prompt(`Ingresa un nuevo nombre/alias para el usuario ${id} (actual: ${currentName}):`);
-            
-            if (newAlias && newAlias.trim() !== "") {
-                saveAlias(id, newAlias.trim());
-                updateDMList(); 
-                if (String(currentDM) === String(id)) {
-                    updateModeLabel(); 
-                }
-            }
-        }
-
-
-        // --- Funciones Auxiliares ---
-
-        function getDMKey(id1, id2) {
-          const sorted = [String(id1), String(id2)].sort();
-          return `${sorted[0]}_${sorted[1]}`;
-        }
-
-        function addContact(contactId) {
-          if (String(contactId) === String(userId)) return;
-          let contactsKey = DM_CONTACTS_KEY_PREFIX + userId;
-          let contacts = JSON.parse(localStorage.getItem(contactsKey) || '[]');
-          contactId = String(contactId);
-
-          if (!contacts.includes(contactId)) {
-            contacts.push(contactId);
-            localStorage.setItem(contactsKey, JSON.stringify(contacts));
-          }
-        }
-
-        // --- Gestión de la Interfaz ---
-
-        function updateModeLabel() {
-          const label = document.getElementById('activeModeLabel');
-          if (currentDM) {
-            const alias = getAlias(currentDM);
-            label.textContent = `DM con ${alias} (${currentDM})`;
-          } else {
-            label.textContent = 'Ningún DM abierto';
-          }
-          document.querySelectorAll('.dm-item').forEach(item => {
-            item.classList.remove('active');
-            if (item.dataset.id === currentDM) {
-              item.classList.add('active');
-            }
-          });
-        }
-
-        function updateDMList() {
-          const listContainer = document.getElementById('dmList');
-          listContainer.innerHTML = ''; 
-          
-          const contactsKey = DM_CONTACTS_KEY_PREFIX + userId;
-          const contacts = JSON.parse(localStorage.getItem(contactsKey) || '[]');
-
-          for (const contactId of contacts) {
-            if (String(contactId) === String(userId)) continue; 
-
-            const alias = getAlias(contactId);
-
-            const dmItem = document.createElement('div');
-            dmItem.className = 'dm-item';
-            dmItem.dataset.id = contactId;
-            
-            const textContainer = document.createElement('div');
-            textContainer.innerHTML = `<div>${alias}</div><div class="id-display">ID: ${contactId}</div>`;
-
-            const editButton = document.createElement('button');
-            editButton.className = 'alias-edit-btn';
-            editButton.textContent = '✏️';
-            editButton.onclick = (e) => {
-                e.stopPropagation(); 
-                setAlias(contactId);
-            };
-
-            dmItem.appendChild(textContainer);
-            dmItem.appendChild(editButton);
-
-            dmItem.onclick = () => {
-              selectDM(contactId);
-            };
-
-            if (String(contactId) === String(currentDM)) {
-                dmItem.classList.add('active');
-            }
-
-            listContainer.appendChild(dmItem);
-          }
-        }
-
-        // --- Lógica de Mensajería Global (Firestore) ---
-
-        function selectDM(contactId) {
-            currentDM = String(contactId);
-            updateModeLabel();
-
-            if (unsubscribeFromChat) {
-                unsubscribeFromChat();
-            }
-
-            const chatRoomId = getDMKey(userId, currentDM);
-            const chatRef = db.collection('chats').doc(chatRoomId).collection('messages');
-            
-            // onSnapshot() escucha los cambios en tiempo real
-            unsubscribeFromChat = chatRef.orderBy('timestamp').onSnapshot(snapshot => {
-                const msgs = [];
-                snapshot.forEach(doc => {
-                    msgs.push(doc.data());
-                });
-                renderMessages(msgs);
-            }, error => {
-                console.error("Error al escuchar mensajes. ¿Reglas de lectura incorrectas?", error);
-            });
-        }
-        
-        function renderMessages(msgs) {
-          const container = document.getElementById('messages');
-          container.innerHTML = '';
-
-          for (const msg of msgs) {
-            const div = document.createElement('div');
-            div.className = 'message';
-            
-            let senderLabel;
-            if (String(msg.sender) === String(userId)) {
-                senderLabel = 'Tú';
-            } else {
-                senderLabel = getAlias(msg.sender);
-            }
-
-            div.innerHTML = `<span>${senderLabel}:</span> ${msg.text || ''}`;
-
-            if (msg.image) {
-              const img = document.createElement('img');
-              img.src = msg.image;
-              img.className = 'chat-image';
-              div.appendChild(img);
-            }
-
-            const time = document.createElement('span');
-            time.className = 'timestamp';
-            const date = msg.timestamp && msg.timestamp.toDate ? new Date(msg.timestamp.toDate()) : new Date();
-            time.textContent = date.toLocaleString();
-            div.appendChild(time);
-
-            container.appendChild(div);
-          }
-          container.scrollTop = container.scrollHeight;
-        }
-
-
-        async function sendMessage() {
-          const textInput = document.getElementById('messageInput');
-          const imageInput = document.getElementById('imageInput');
-          const text = textInput.value.trim();
-          const imageFile = imageInput.files[0];
-          
-          const sendButton = document.querySelector('.input-area button');
-
-          if (!text && !imageFile) return;
-          if (!currentDM) {
-              alert('Debes abrir un DM primero.');
-              return;
-          }
-          
-          sendButton.disabled = true; 
-          addContact(currentDM); 
-
-          const chatRoomId = getDMKey(userId, currentDM);
-          const chatRef = db.collection('chats').doc(chatRoomId).collection('messages');
-          
-          const messageData = { 
-              sender: userId, 
-              text: text, 
-              timestamp: firebase.firestore.FieldValue.serverTimestamp() 
-          };
-
-          const saveMessageToFirebase = async (imageBase64 = null) => {
-            if (imageBase64) {
-                messageData.image = imageBase64;
-            }
-
-            try {
-                await chatRef.add(messageData); 
-                console.log("✅ Mensaje enviado con éxito al chat room:", chatRoomId); // LOG DE ÉXITO
-                
-                // Limpiar inputs
-                textInput.value = '';
-                imageInput.value = '';
-                
-            } catch (error) {
-                console.error("❌ Error al enviar el mensaje. Revisa las reglas de escritura (write rules) de Firestore:", error);
-                alert("Hubo un error al enviar el mensaje. Por favor, revisa la Consola del Navegador (F12) y las Reglas de Firebase.");
-            } finally {
-                sendButton.disabled = false; 
-            }
-          };
-
-          if (imageFile) {
-            const reader = new FileReader();
-            reader.onload = function (e) {
-              saveMessageToFirebase(e.target.result);
-            };
-            reader.readAsDataURL(imageFile);
-          } else {
-            await saveMessageToFirebase();
-          }
-        }
-
-        function startDM() {
-          const targetIdInput = document.getElementById('dmTargetId');
-          const targetId = targetIdInput.value.trim();
-          
-          if (!targetId || isNaN(targetId) || String(targetId) === String(userId)) {
-            alert('Por favor, ingresa un ID de usuario válido y diferente al tuyo.');
-            return;
-          }
-          
-          addContact(targetId);
-          selectDM(targetId);
-          targetIdInput.value = ''; 
-          updateDMList(); 
-        }
-        
         // Cargar la lista de DMs al cargar la página
         updateDMList();
-
     } catch (e) {
         console.error("❌ ERROR CRÍTICO DE INICIALIZACIÓN DE FIREBASE. Por favor, verifica tu objeto 'firebaseConfig' y que los scripts de Firebase se hayan cargado correctamente.", e);
         document.getElementById('messages').innerHTML = '<div style="color: red; padding: 20px;">ERROR CRÍTICO: No se pudo conectar a Firebase. Revisa la consola (F12).</div>';
