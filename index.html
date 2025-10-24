@@ -2,19 +2,19 @@
 <html lang="es">
 <head>
   <meta charset="UTF-8" />
-  <title>Farans DM</title>
+  <title>Conclave</title>
   <style>
     body {
       margin: 0;
       font-family: 'Segoe UI', sans-serif;
       display: flex;
       height: 100vh;
-      background-color: #202225;
+      background-color: #1e1f22;
       color: #dcddde;
     }
 
     .sidebar {
-      width: 250px;
+      width: 260px;
       background-color: #2f3136;
       padding: 20px;
       box-sizing: border-box;
@@ -25,11 +25,12 @@
     .sidebar h2 {
       margin-bottom: 10px;
       color: #ffffff;
+      font-size: 22px;
     }
 
     .section-title {
       margin-top: 20px;
-      font-size: 14px;
+      font-size: 13px;
       color: #b9bbbe;
     }
 
@@ -114,6 +115,7 @@
       display: flex;
       gap: 10px;
       flex-wrap: wrap;
+      align-items: center;
     }
 
     .input-area input[type="text"] {
@@ -129,11 +131,17 @@
       color: #b9bbbe;
     }
 
-    .input-area input[type="file"] {
-      padding: 6px;
-      background-color: #2f3136;
+    .input-area label {
+      background-color: #5865f2;
       color: white;
-      border: none;
+      padding: 8px 12px;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 14px;
+    }
+
+    .input-area input[type="file"] {
+      display: none;
     }
 
     .input-area button {
@@ -165,7 +173,7 @@
 </head>
 <body>
   <div class="sidebar">
-    <h2>Farans</h2>
+    <h2>Conclave</h2>
     <div class="section-title">Tu ID</div>
     <div class="dm-item" style="cursor:default;">Anonymous (<span id="userId"></span>)</div>
 
@@ -184,16 +192,17 @@
     <div class="messages" id="messages"></div>
     <div class="input-area">
       <input type="text" id="messageInput" placeholder="Escribe tu mensaje..." />
+      <label for="imageInput">📷 Imagen</label>
       <input type="file" id="imageInput" accept="image/*" />
       <button onclick="sendMessage()">Enviar</button>
     </div>
   </div>
 
   <script>
-    let userId = localStorage.getItem('farans_user_id');
+    let userId = localStorage.getItem('conclave_user_id');
     if (!userId) {
       userId = Math.floor(1000 + Math.random() * 9000);
-      localStorage.setItem('farans_user_id', userId);
+      localStorage.setItem('conclave_user_id', userId);
     }
     document.getElementById('userId').textContent = userId;
 
@@ -272,21 +281,4 @@
         msgs.push({ sender: userId, text, timestamp });
         localStorage.setItem(key, JSON.stringify(msgs));
         updateDMList(currentDM);
-        textInput.value = '';
-        renderMessages();
-      }
-    }
-
-    function updateModeLabel() {
-      const label = document.getElementById('activeModeLabel');
-      label.textContent = `DM con Anonymous (${currentDM})`;
-    }
-
-    function updateDMList(fromId) {
-      const list = document.getElementById('dmList');
-      const existing = Array.from(list.children).map(el => el.dataset.id);
-      if (existing.includes(fromId)) return;
-
-      const item = document.createElement('div');
-      item.className = 'dm-item';
-      item
+        textInput
