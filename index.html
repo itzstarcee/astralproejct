@@ -5,12 +5,6 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Fendrox Móvil</title> 
   
-  
-  <!-- Usamos una versión compatible de Firebase para el entorno de Canvas (V8) -->
-  <!-- Esto NO DEBE ser cambiado a V9, ya que el resto del código usa sintaxis V8 -->
-<script src="https://www.gstatic.com/firebasejs/8.6.8/firebase-app.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/8.6.8/firebase-firestore.js"></script>
-
   <style>
     /* ------------------------------ */
     /* ESTILOS BASE Y LAYOUT GENERAL */
@@ -605,13 +599,14 @@
     <h2>Fendrox</h2>
     
     <!-- Panel de ID de Usuario -->
-<div class="user-info-panel">
+    <div class="user-info-panel">
         <h3>Tu ID:</h3>
-        <div class="id-display" id="userId"></div>
+        <!-- El ID se actualiza dinámicamente con el ID real de Firebase -->
+        <div class="id-display" id="userId">Cargando ID...</div>
     </div>
     
     <!-- Controles para iniciar un nuevo DM -->
-<div class="dm-controls">
+    <div class="dm-controls">
         <div class="section-title">Enviar DM</div>
         <input type="text" id="dmTargetId" placeholder="ID del usuario a contactar" />
         <button onclick="startDM()">Abrir DM</button>
@@ -620,690 +615,630 @@
     <div class="section-title">Contactos Recientes</div>
     <div id="dmList" class="dm-list">
         <!-- Lista de DMs se renderiza aquí -->
-</div>
+    </div>
 
   </div>
   
   
   <!-- Overlay Móvil (para cerrar el sidebar al tocar fuera) -->
-<div id="mobileOverlay" class="overlay-mobile" onclick="toggleSidebar()"></div>
+    <div id="mobileOverlay" class="overlay-mobile" onclick="toggleSidebar()"></div>
 
-  <div class="chat">
-    <div class="chat-header" id="chatHeader">
-        <!-- Botón para mostrar el sidebar en móviles -->
-<button class="menu-toggle-btn" onclick="toggleSidebar()">
-            <!-- Icono de Hamburguesa (Menú) -->
-<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <line x1="3" y1="12" x2="21" y2="12"></line>
-                <line x1="3" y1="6" x2="21" y2="6"></line>
-                <line x1="3" y1="18" x2="21" y2="18"></line>
-            </svg>
-        </button>
-        <!-- Etiqueta del chat activo -->
-        <span id="activeModeLabel">Ningún DM abierto</span>
+    <div class="chat">
+        <div class="chat-header" id="chatHeader">
+            <!-- Botón para mostrar el sidebar en móviles -->
+            <button class="menu-toggle-btn" onclick="toggleSidebar()">
+                <!-- Icono de Hamburguesa (Menú) -->
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <line x1="3" y1="12" x2="21" y2="12"></line>
+                    <line x1="3" y1="6" x2="21" y2="6"></line>
+                    <line x1="3" y1="18" x2="21" y2="18"></line>
+                </svg>
+            </button>
+            <!-- Etiqueta del chat activo -->
+            <span id="activeModeLabel">Conectando...</span>
+        </div>
+        
+        <div class="messages" id="messages">
+            <!-- Los mensajes se renderizan aquí -->
+        </div>
+        <div class="input-area">
+            <!-- Botón de subir imagen -->
+            <label for="imageInput">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
+                    <circle cx="8.5" cy="8.5" r="1.5"></circle>
+                    <polyline points="21 15 16 10 5 21"></polyline>
+                </svg>
+            </label>
+            <input type="file" id="imageInput" accept="image/*" />
+            
+            <!-- Campo de texto para el mensaje -->
+            <input type="text" id="messageInput" placeholder="Escribe tu mensaje..." />
+            
+            <!-- Botón de enviar -->
+            <button onclick="sendMessage()" class="send-button" id="sendButton" disabled>
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <line x1="22" y1="2" x2="11" y2="13"></line><polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
+                </svg>
+            </button>
+        </div>
     </div>
-    
-    <div class="messages" id="messages">
-        <!-- Los mensajes se renderizan aquí -->
-    </div>
-    <div class="input-area">
-        <!-- Botón de subir imagen -->
-      <label for="imageInput">
-        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
-            <circle cx="8.5" cy="8.5" r="1.5"></circle>
-            <polyline points="21 15 16 10 5 21"></polyline>
-        </svg>
-      </label>
-      <input type="file" id="imageInput" accept="image/*" />
-      
-      <!-- Campo de texto para el mensaje -->
-      <input type="text" id="messageInput" placeholder="Escribe tu mensaje..." />
-      
-      <!-- Botón de enviar -->
-      <button onclick="sendMessage()" class="send-button">
-          <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <line x1="22" y1="2" x2="11" y2="13"></line><polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
-          </svg>
-      </button>
-    </div>
-  </div>
 
   
-  <!-- Modal Personalizado para alertas, confirmaciones y prompts -->
-<div id="customModal" class="modal-overlay">
-    <div class="modal-content">
-      <div id="modalIcon" class="modal-icon-container">
-        <!-- Icono se inserta aquí -->
-</div>
-      <div id="modalTitle" class="modal-title"></div>
-      <div id="modalMessage" class="modal-message"></div>
-      <input type="text" id="modalInput" class="modal-input" placeholder="Escribe aquí..." style="display:none;">
-      <div id="modalActions" class="modal-actions">
-        <!-- Botones se insertan aquí -->
-</div>
+    <!-- Modal Personalizado para alertas, confirmaciones y prompts -->
+    <div id="customModal" class="modal-overlay">
+        <div class="modal-content">
+            <div id="modalIcon" class="modal-icon-container">
+                <!-- Icono se inserta aquí -->
+            </div>
+            <div id="modalTitle" class="modal-title"></div>
+            <div id="modalMessage" class="modal-message"></div>
+            <input type="text" id="modalInput" class="modal-input" placeholder="Escribe aquí..." style="display:none;">
+            <div id="modalActions" class="modal-actions">
+                <!-- Botones se insertan aquí -->
+            </div>
+        </div>
     </div>
-  </div>
 
 
-  <script>
-    // Configuración de Firebase - Usando la configuración proporcionada por el usuario
-    const firebaseConfig = {
-      apiKey: "AIzaSyC31C2OrmxBrl2EhXGzzdwbK-AVa-wrMzo",
-      authDomain: "gifthub1-712d1.firebaseapp.com",
-      databaseURL: "https://gifthub1-712d1-default-rtdb.firebaseio.com",
-      projectId: "gifthub1-712d1",
-      storageBucket: "gifthub1-712d1.firebasestorage.app",
-      messagingSenderId: "730338818683",
-      appId: "1:730338818683:web:236ebee6459dd6138f00de"
-    };
-
-    let db; // Referencia a Firestore
-
-    // --- Variables y Lógica Principal (Definidas globalmente) ---
-    const USER_ID_KEY = 'fendrox_user_id';
-    const DM_CONTACTS_KEY_PREFIX = 'conclave_dm_contacts_'; 
-    const ALIASES_KEY = 'fendrox_aliases'; 
-
-    let userId = localStorage.getItem(USER_ID_KEY);
-    
-    // Generar o recuperar ID de usuario
-    if (!userId) {
-        // Generar un ID de 4 dígitos para simplicidad
-        userId = String(Math.floor(1000 + Math.random() * 9000));
-        localStorage.setItem(USER_ID_KEY, userId);
-    }
-    document.getElementById('userId').textContent = userId;
-
-    let currentDM = null; // ID del contacto del chat activo
-    let aliases = JSON.parse(localStorage.getItem(ALIASES_KEY) || '{}');
-    let unsubscribeFromChat = null; // Función para desuscribirse del listener de Firestore
-    
-    // --- LÓGICA DE SIDEBAR (RESPONSIVE MÓVIL) ---
-    function toggleSidebar() {
-        const sidebar = document.getElementById('sidebar');
-        const overlay = document.getElementById('mobileOverlay');
-        const isActive = sidebar.classList.toggle('active');
-
-        // Toggle del overlay y del scroll del body
-        overlay.classList.toggle('active', isActive);
-        // Evita el scroll del cuerpo cuando el sidebar está abierto en móvil
-        document.body.style.overflow = isActive && window.innerWidth <= 768 ? 'hidden' : 'hidden'; 
-        if (!isActive) {
-            document.body.style.overflow = 'hidden'; // Asegura que el scroll se mantenga oculto
-        }
-    }
-
-
-    // --- FUNCIONES DE MODAL PERSONALIZADO (Reemplazo de alert/confirm) ---
-
-    const TRASH_SVG = `<svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#f23f43" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/></svg>`;
-    const PENCIL_SVG = `<svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#5865f2" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/></svg>`;
-    const ALERT_SVG = `<svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#ffc600" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>`;
-
-    function showCustomModal(type, title, message, callback, defaultValue = '') {
-      const modal = document.getElementById('customModal');
-      const modalTitle = document.getElementById('modalTitle');
-      const modalMessage = document.getElementById('modalMessage');
-      const modalInput = document.getElementById('modalInput');
-      const modalActions = document.getElementById('modalActions');
-      const modalIcon = document.getElementById('modalIcon');
-
-      modalTitle.textContent = title;
-      modalMessage.textContent = message;
-      modalActions.innerHTML = '';
-      modalInput.style.display = 'none';
-      modalIcon.innerHTML = '';
-
-      if (type === 'alert') {
-        modalIcon.innerHTML = ALERT_SVG; 
-        const okButton = document.createElement('button');
-        okButton.className = 'modal-btn btn-primary';
-        okButton.textContent = 'Aceptar';
-        okButton.onclick = () => { modal.classList.remove('active'); if (callback) callback(true); };
-        modalActions.appendChild(okButton);
-
-      } else if (type === 'confirm') {
-        modalIcon.innerHTML = TRASH_SVG; 
+    <script type="module">
+        // Importaciones del SDK modular (V9) de Firebase
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+        import { getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getFirestore, collection, doc, query, orderBy, onSnapshot, addDoc, deleteDoc, serverTimestamp, setLogLevel } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
         
-        const cancelButton = document.createElement('button');
-        cancelButton.className = 'modal-btn btn-cancel';
-        cancelButton.textContent = 'Cancelar';
-        cancelButton.onclick = () => { modal.classList.remove('active'); if (callback) callback(false); };
+        // Habilitar logs de depuración
+        setLogLevel('debug');
+
+        // --- Variables Globales Mandatorias ---
+        const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
+        const firebaseConfig = typeof __firebase_config !== 'undefined' ? JSON.parse(__firebase_config) : {};
+        const initialAuthToken = typeof __initial_auth_token !== 'undefined' ? __initial_auth_token : null;
+
+        let app;
+        let db;
+        let auth;
+        let userId = null;
+        let isAuthReady = false; 
+
+        // --- Variables de Estado de la Aplicación ---
+        const USER_ID_KEY = 'fendrox_user_id';
+        const DM_CONTACTS_KEY_PREFIX = 'conclave_dm_contacts_'; 
+        const ALIASES_KEY = 'fendrox_aliases'; 
+
+        let currentDM = null; // ID del contacto del chat activo
+        let aliases = JSON.parse(localStorage.getItem(ALIASES_KEY) || '{}');
+        let unsubscribeFromChat = null; // Función para desuscribirse del listener de Firestore
+
         
-        const confirmButton = document.createElement('button');
-        confirmButton.className = 'modal-btn btn-danger';
-        confirmButton.textContent = 'Eliminar';
-        confirmButton.onclick = () => { modal.classList.remove('active'); if (callback) callback(true); };
-        
-        modalActions.appendChild(cancelButton);
-        modalActions.appendChild(confirmButton);
+        // --- LÓGICA DE FIREBASE Y AUTHENTICACIÓN ---
 
-      } else if (type === 'input') {
-        modalIcon.innerHTML = PENCIL_SVG; 
-        
-        modalInput.style.display = 'block';
-        modalInput.value = defaultValue;
-        modalInput.focus();
-        
-        const cancelButton = document.createElement('button');
-        cancelButton.className = 'modal-btn btn-cancel';
-        cancelButton.textContent = 'Cancelar';
-        cancelButton.onclick = () => { modal.classList.remove('active'); if (callback) callback(null); };
-        
-        const saveButton = document.createElement('button');
-        saveButton.className = 'modal-btn btn-primary';
-        saveButton.textContent = 'Guardar';
-        saveButton.onclick = () => { modal.classList.remove('active'); if (callback) callback(modalInput.value); };
+        async function initializeFirebase() {
+            try {
+                app = initializeApp(firebaseConfig);
+                db = getFirestore(app);
+                auth = getAuth(app);
+                
+                // 1. Manejo de Autenticación
+                if (initialAuthToken) {
+                    await signInWithCustomToken(auth, initialAuthToken);
+                } else {
+                    await signInAnonymously(auth);
+                }
+                
+                // 2. Esperar por el estado de Auth y establecer userId
+                onAuthStateChanged(auth, (user) => {
+                    if (user) {
+                        userId = user.uid;
+                        isAuthReady = true;
+                        
+                        // 3. Actualizar la interfaz (Solución al problema "ni ids")
+                        document.getElementById('userId').textContent = userId;
+                        document.getElementById('activeModeLabel').textContent = 'Listo para chatear';
+                        document.getElementById('sendButton').disabled = false;
 
-        modalInput.onkeypress = (e) => {
-            if (e.key === 'Enter') saveButton.click();
-        };
-
-        modalActions.appendChild(cancelButton);
-        modalActions.appendChild(saveButton);
-      }
-
-      modal.classList.add('active');
-    }
-
-    // Reemplazos de funciones nativas con modales
-    window.alert = (message) => {
-        showCustomModal('alert', 'Aviso', message);
-    };
-
-    // --- Funciones Auxiliares de Datos ---
-    
-    // Genera la clave de chat única y ordenada para Firestore
-    function getDMKey(id1, id2) {
-      const sorted = [String(id1), String(id2)].sort();
-      // Usamos el camino completo tal como lo usaste
-      // NOTE: En V8, necesitamos usar la ruta completa de colección/documento
-      return `artifacts/appId/public/data/chats/${sorted[0]}_${sorted[1]}`;
-    }
-
-    // Genera las iniciales para el avatar
-    function getInitials(id) {
-        if (id === userId) return 'T'; // Tu
-        const alias = aliases[id] || `ID ${id}`;
-        return alias.charAt(0).toUpperCase();
-    }
-
-    // Obtiene el alias o el ID
-    function getAlias(id) {
-        return aliases[id] || `ID ${id}`;
-    }
-
-    // Guarda el alias en localStorage
-    function saveAlias(id, name) {
-        aliases[id] = name;
-        localStorage.setItem(ALIASES_KEY, JSON.stringify(aliases));
-    }
-
-    // MODAL para editar alias
-    function setAlias(id) {
-        const currentName = getAlias(id);
-        
-        showCustomModal(
-            'input', 
-            'Editar Alias', 
-            `Ingresa un nuevo nombre/alias para el usuario ${id}:`, 
-            (newAlias) => {
-                if (newAlias && newAlias.trim() !== "" && newAlias !== currentName) {
-                    saveAlias(id, newAlias.trim());
-                    updateDMList(); 
-                    if (String(currentDM) === String(id)) {
-                        updateModeLabel(); 
+                        // 4. Inicializar la aplicación solo después de tener el userId
+                        initializeAppLogic();
+                    } else {
+                        // Esto no debería pasar con token inicial, pero es un fallback
+                        console.error("Usuario no autenticado. Usando ID aleatorio.");
+                        userId = crypto.randomUUID();
+                        isAuthReady = true;
+                        document.getElementById('userId').textContent = userId;
+                        initializeAppLogic();
                     }
-                }
-            }, 
-            currentName 
-        );
-    }
-    
-    // MODAL para eliminar contacto
-    function removeContact(contactId) {
-        const alias = getAlias(contactId);
-
-        showCustomModal(
-            'confirm',
-            'Eliminar Contacto',
-            `¿Estás seguro de que quieres eliminar a ${alias} (${contactId}) de tus contactos?`,
-            (confirmed) => {
-                if (!confirmed) return;
-                
-                let contactsKey = DM_CONTACTS_KEY_PREFIX + userId;
-                let contacts = JSON.parse(localStorage.getItem(contactsKey) || '[]');
-                contactId = String(contactId);
-
-                const index = contacts.indexOf(contactId);
-                if (index > -1) {
-                    contacts.splice(index, 1);
-                    localStorage.setItem(contactsKey, JSON.stringify(contacts));
-                }
-                
-                // Si el chat eliminado estaba abierto, cerrarlo
-                if (String(currentDM) === String(contactId)) {
-                    currentDM = null;
-                    if (unsubscribeFromChat) {
-                        unsubscribeFromChat();
-                        document.getElementById('messages').innerHTML = ''; // Limpiar mensajes
-                    }
-                    updateModeLabel();
-                }
-                
-                updateDMList();
-            }
-        );
-    }
-
-    // Añade un ID a la lista de contactos recientes
-    function addContact(contactId) {
-      if (String(contactId) === String(userId)) return;
-      let contactsKey = DM_CONTACTS_KEY_PREFIX + userId;
-      let contacts = JSON.parse(localStorage.getItem(contactsKey) || '[]');
-      contactId = String(contactId);
-
-      // Mover el contacto al principio o añadirlo si no existe
-      if (!contacts.includes(contactId)) {
-        contacts.unshift(contactId); // Añadir al principio
-      } else {
-        const index = contacts.indexOf(contactId);
-        contacts.splice(index, 1); // Remover de su posición actual
-        contacts.unshift(contactId); // Mover al principio
-      }
-      
-      // Limitar la lista (opcional, por si acaso)
-      // if (contacts.length > 20) { contacts.pop(); } 
-
-      localStorage.setItem(contactsKey, JSON.stringify(contacts));
-    }
-
-    // Actualiza la etiqueta del chat activo
-    function updateModeLabel() {
-      const label = document.getElementById('activeModeLabel');
-
-      let text;
-      if (currentDM) {
-        const alias = getAlias(currentDM);
-        text = `DM con ${alias} (${currentDM})`;
-      } else {
-        text = 'Ningún DM abierto';
-      }
-      
-      label.textContent = text;
-
-      // Actualizar estilo activo en la lista de contactos
-      document.querySelectorAll('.dm-item').forEach(item => {
-        item.classList.remove('active');
-        if (item.dataset.id === currentDM) {
-          item.classList.add('active');
-        }
-      });
-    }
-
-    // Renderiza la lista de contactos en el sidebar
-    function updateDMList() {
-      const listContainer = document.getElementById('dmList');
-      listContainer.innerHTML = ''; 
-      
-      const contactsKey = DM_CONTACTS_KEY_PREFIX + userId;
-      const contacts = JSON.parse(localStorage.getItem(contactsKey) || '[]');
-
-      for (const contactId of contacts) {
-        if (String(contactId) === String(userId)) continue; 
-
-        const alias = getAlias(contactId);
-        const initials = getInitials(contactId);
-
-        const dmItem = document.createElement('div');
-        dmItem.className = 'dm-item';
-        dmItem.dataset.id = contactId;
-        
-        // Avatar
-        const avatar = document.createElement('div');
-        avatar.className = 'avatar';
-        avatar.textContent = initials;
-        
-        const textContainer = document.createElement('div');
-        textContainer.style.flexGrow = '1';
-        textContainer.innerHTML = `<div style="color:white; font-weight:600; max-width: 150px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">${alias}</div><div class="id-display">ID: ${contactId}</div>`;
-
-        const actionsContainer = document.createElement('div');
-        actionsContainer.className = 'actions';
-
-        // Botón Editar Alias
-        const editButton = document.createElement('button');
-        editButton.className = 'alias-edit-btn';
-        editButton.title = 'Editar Alias';
-        editButton.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/></svg>`; 
-        editButton.onclick = (e) => {
-            e.stopPropagation(); 
-            setAlias(contactId); 
-        };
-        actionsContainer.appendChild(editButton);
-        
-        // Botón Eliminar Contacto
-        const removeButton = document.createElement('button');
-        removeButton.className = 'remove-contact-btn';
-        removeButton.title = 'Eliminar Contacto';
-        removeButton.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/></svg>`;
-        removeButton.onclick = (e) => {
-            e.stopPropagation();
-            removeContact(contactId); 
-        };
-        actionsContainer.appendChild(removeButton);
-
-        dmItem.appendChild(avatar);
-        dmItem.appendChild(textContainer);
-        dmItem.appendChild(actionsContainer);
-
-        dmItem.onclick = () => {
-          selectDM(contactId);
-          // Si estamos en móvil, cierra la barra lateral al seleccionar un chat
-          if (window.innerWidth <= 768) {
-              toggleSidebar();
-          }
-        };
-
-        if (String(contactId) === String(currentDM)) {
-            dmItem.classList.add('active');
-        }
-
-        listContainer.appendChild(dmItem);
-      }
-    }
-
-    // Función para eliminar un mensaje propio de Firestore
-    function deleteOwnMessage(messageId) {
-        showCustomModal(
-            'confirm',
-            'Eliminar Mensaje',
-            '¿Estás seguro de que quieres eliminar este mensaje? Esta acción es permanente.',
-            (confirmed) => {
-                if (!confirmed) return;
-
-                if (!currentDM || !db) {
-                    alert("Error: Chat no seleccionado o Firestore no inicializado.");
-                    return;
-                }
-
-                // Obtener la ruta del chat
-                const docPath = getDMKey(userId, currentDM);
-                const pathSegments = docPath.split('/');
-                const chatRoomId = pathSegments[pathSegments.length - 1]; // 'ID1_ID2'
-                
-                // Usando la sintaxis V8
-                const chatRef = db.collection('chats').doc(chatRoomId).collection('messages');
-                
-                const msgRef = chatRef.doc(messageId);
-
-                msgRef.delete().then(() => {
-                    console.log("Mensaje eliminado con éxito:", messageId);
-                }).catch((error) => {
-                    console.error("Error al eliminar el mensaje:", error);
-                    alert("Error al eliminar el mensaje. Revisa las Reglas de Seguridad para la operación 'delete'.");
                 });
+
+            } catch (e) {
+                console.error("Error FATAL al inicializar Firebase:", e);
+                window.alert("Error de Conexión: No se pudo iniciar Firebase. Revisa la consola.");
             }
-        );
-    }
-
-
-    // Renderiza la lista de mensajes en el contenedor principal
-    function renderMessages(msgs) {
-      const container = document.getElementById('messages');
-      const isScrolledToBottom = container.scrollHeight - container.clientHeight <= container.scrollTop + 1; // +1 de margen
-      
-      container.innerHTML = '';
-      const fragment = document.createDocumentFragment();
-
-      for (const msg of msgs) {
-        const div = document.createElement('div');
-        div.className = 'message';
-        
-        const isOwnMessage = String(msg.sender) === String(userId);
-        
-        // 1. Avatar
-        const initials = isOwnMessage ? 'T' : getInitials(msg.sender);
-        const avatar = document.createElement('div');
-        avatar.className = 'avatar';
-        avatar.textContent = initials;
-        div.appendChild(avatar);
-
-        // 2. Contenido del Mensaje
-        const contentContainer = document.createElement('div');
-        contentContainer.className = 'message-content';
-
-        // 2a. Info del remitente y timestamp
-        const info = document.createElement('div');
-        info.className = 'message-info';
-        
-        const senderName = document.createElement('span');
-        senderName.className = 'sender-name';
-        senderName.textContent = isOwnMessage ? 'Tú' : getAlias(msg.sender);
-        info.appendChild(senderName);
-
-        const time = document.createElement('span');
-        time.className = 'timestamp';
-        // V8: `msg.timestamp` es un objeto Timestamp con un método `toDate()`
-        const date = msg.timestamp && msg.timestamp.toDate ? new Date(msg.timestamp.toDate()) : new Date(); 
-        time.textContent = date.toLocaleTimeString('es-ES', {hour: '2-digit', minute:'2-digit', second:'2-digit', hour12: false}) + ' ' + date.toLocaleDateString('es-ES');
-        info.appendChild(time);
-        
-        contentContainer.appendChild(info);
-
-        // 2b. Texto
-        if (msg.text) {
-            const textContent = document.createElement('div');
-            textContent.className = 'message-text';
-            textContent.textContent = msg.text;
-            contentContainer.appendChild(textContent);
         }
-
-        // 2c. Imagen
-        if (msg.image) {
-          const img = document.createElement('img');
-          img.src = msg.image;
-          img.className = 'chat-image';
-          contentContainer.appendChild(img);
-        }
-
-        div.appendChild(contentContainer);
-
-
-        // 3. Botón de eliminar (SOLO para mensajes propios)
-        if (isOwnMessage && msg.id) { 
-            const deleteButton = document.createElement('button');
-            deleteButton.className = 'delete-message-btn';
-            deleteButton.title = 'Eliminar este mensaje';
-            deleteButton.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/></svg>`;
-            deleteButton.onclick = (e) => {
-                e.stopPropagation(); // Evita clics no deseados
-                deleteOwnMessage(msg.id);
-            };
-            div.appendChild(deleteButton);
-        }
-
-        fragment.appendChild(div);
-      }
-      container.appendChild(fragment);
-      
-      // Mantiene el scroll al final si el usuario estaba en la parte inferior
-      if (isScrolledToBottom) {
-          container.scrollTop = container.scrollHeight;
-      }
-    }
-
-    // Inicia o cambia a un DM específico
-    function selectDM(contactId) {
-        if (!db) return console.error("Firestore no está inicializado.");
         
-        currentDM = String(contactId);
-        updateModeLabel();
-        addContact(currentDM); // Asegura que el chat seleccionado esté en la lista y sea el primero
-        updateDMList(); // Vuelve a renderizar la lista con el nuevo orden
-        
-
-        if (unsubscribeFromChat) {
-            unsubscribeFromChat();
-        }
-
-        const chatRoomId = getDMKey(userId, currentDM);
-        
-        // Obtener la colección de mensajes
-        const pathSegments = chatRoomId.split('/');
-        // La ID del documento del chat es la parte final de la ruta: 'ID1_ID2'
-        const docId = pathSegments[pathSegments.length - 1]; 
-        
-        // Sintaxis V8: db.collection().doc().collection()
-        const chatRef = db.collection('chats').doc(docId).collection('messages');
-        
-        // Listener en tiempo real (Sintaxis V8)
-        unsubscribeFromChat = chatRef.orderBy('timestamp').onSnapshot(snapshot => {
-            const msgs = [];
-            snapshot.forEach(doc => {
-                const data = doc.data();
-                data.id = doc.id; // ID del documento para la eliminación
-                msgs.push(data);
-            });
-            renderMessages(msgs);
-        }, error => {
-            console.error("Error al escuchar mensajes. ¿Reglas de lectura incorrectas?", error);
-        });
-    }
-    
-    // --- FUNCIONES LLAMADAS DESDE HTML (GLOBALES) ---
-    
-    // Función de envío de mensaje con soporte para imágenes base64
-    async function sendMessage() {
-      const textInput = document.getElementById('messageInput');
-      const imageInput = document.getElementById('imageInput');
-      const text = textInput.value.trim();
-      const imageFile = imageInput.files[0];
-      const sendButton = document.querySelector('.input-area .send-button');
-
-      if (!text && !imageFile) return;
-      if (!currentDM) {
-          alert('Debes abrir un DM primero.'); 
-          return;
-      }
-      if (!db) {
-        console.error("Firestore no está inicializado.");
-        alert("Error de conexión: Firestore no está listo."); 
-        return;
-      }
-      
-      sendButton.disabled = true; 
-      addContact(currentDM); 
-
-      // Obtener la ruta del chat
-      const chatRoomId = getDMKey(userId, currentDM);
-      const pathSegments = chatRoomId.split('/');
-      const docId = pathSegments[pathSegments.length - 1]; 
-      
-      // Sintaxis V8
-      const chatRef = db.collection('chats').doc(docId).collection('messages');
-
-      // Sintaxis V8: firebase.firestore.FieldValue.serverTimestamp()
-      const messageData = { 
-          sender: userId, 
-          text: text, 
-          timestamp: firebase.firestore.FieldValue.serverTimestamp() 
-      };
-
-      const saveMessageToFirebase = async (imageBase64 = null) => {
-        if (imageBase64) {
-            messageData.image = imageBase64;
-            // Si hay imagen, el texto puede ser opcional (por ejemplo, solo se envía la imagen)
-        }
-
-        try {
-            // Sintaxis V8: chatRef.add(data)
-            await chatRef.add(messageData);
-            console.log("Mensaje enviado con éxito");
-            textInput.value = '';
-            imageInput.value = null; // Limpiar el input de archivo
-        } catch (e) {
-            console.error("Error al enviar el mensaje: ", e);
-            alert("Error al enviar el mensaje. Revisa tu conexión y las reglas de seguridad.");
-        } finally {
-            sendButton.disabled = false;
-        }
-      };
-
-      if (imageFile) {
-        // Manejar la carga y conversión de la imagen a Base64
-        const reader = new FileReader();
-        reader.onload = function(e) {
-          saveMessageToFirebase(e.target.result);
-        };
-        reader.onerror = function(e) {
-            console.error("Error al leer la imagen:", e);
-            alert("Error al cargar la imagen.");
-            sendButton.disabled = false;
-        };
-        reader.readAsDataURL(imageFile);
-      } else {
-        // Enviar solo texto
-        saveMessageToFirebase();
-      }
-    } // FIN de la función sendMessage
-    
-    // Inicia un DM desde el input de ID
-    function startDM() {
-      const targetId = document.getElementById('dmTargetId').value.trim();
-      if (!targetId || targetId === userId) {
-          alert('ID de usuario inválido o es tu propio ID.');
-          return;
-      }
-      
-      selectDM(targetId);
-      document.getElementById('dmTargetId').value = ''; // Limpiar input
-    }
-    
-    // --- INICIALIZACIÓN ---
-
-    function initializeFirebase() {
-        try {
-            // 1. Inicializar la aplicación de Firebase (Sintaxis V8)
-            if (!firebase.apps.length) {
-                firebase.initializeApp(firebaseConfig);
-            }
-            
-            // 2. Inicializar Firestore (Sintaxis V8)
-            // ESTA ES LA LÍNEA CORREGIDA: Se usa firebase.firestore() para obtener la instancia.
-            db = firebase.firestore(); 
-            
-            // La función setLogLevel no es estándar en el SDK v8. La omitimos para evitar errores.
-            
-            console.log("Firebase y Firestore inicializados.");
-            
-            // Cargar lista de DMs y seleccionar el primero si existe
+        // Lógica de inicialización que depende de Auth
+        function initializeAppLogic() {
             updateDMList();
             const contacts = JSON.parse(localStorage.getItem(DM_CONTACTS_KEY_PREFIX + userId) || '[]');
             if (contacts.length > 0) {
                 selectDM(contacts[0]); 
             } else {
-                updateModeLabel(); // Asegura que se muestre "Ningún DM abierto"
+                updateModeLabel();
             }
+        }
+
+
+        // --- FUNCIONES AUXILIARES DE DATOS ---
+        
+        // Obtiene la colección base de mensajes (V9: usa paths correctos)
+        function getMessagesCollectionRef(targetId) {
+            if (!db || !userId) return null;
+
+            const sortedIds = [String(userId), String(targetId)].sort();
+            const chatRoomId = `${sortedIds[0]}_${sortedIds[1]}`;
             
-        } catch (e) {
-            console.error("Error al inicializar Firebase. ¿Faltan scripts o la configuración es incorrecta?", e);
-            alert("Error: No se pudo conectar a Fendrox. Revisa la consola para más detalles.");
+            // Ruta MANDATORIA de Firestore para datos públicos colaborativos:
+            // /artifacts/{appId}/public/data/chats/{chatRoomId}/messages
+            return collection(db, 'artifacts', appId, 'public', 'data', 'chats', chatRoomId, 'messages');
         }
-    }
 
-    // Asegurarse de que el script de firebase esté cargado antes de inicializar
-    window.onload = initializeFirebase;
 
-    // Listener para la tecla Enter
-    document.getElementById('messageInput').addEventListener('keypress', function(e) {
-        if (e.key === 'Enter') {
-            e.preventDefault(); // Previene la línea nueva si el input fuera un textarea
-            sendMessage();
+        // Genera las iniciales para el avatar
+        function getInitials(id) {
+            if (String(id) === String(userId)) return 'T'; // Tu
+            const alias = aliases[id] || `ID ${id}`;
+            return alias.charAt(0).toUpperCase();
         }
-    });
 
-    // Listener para el input de imagen para disparar el envío si solo hay una imagen
-    document.getElementById('imageInput').addEventListener('change', function() {
-        if (this.files.length > 0 && !document.getElementById('messageInput').value.trim()) {
+        // Obtiene el alias o el ID
+        function getAlias(id) {
+            return aliases[id] || `ID ${id}`;
+        }
+
+        // Guarda el alias en localStorage
+        function saveAlias(id, name) {
+            aliases[id] = name;
+            localStorage.setItem(ALIASES_KEY, JSON.stringify(aliases));
+        }
+
+        // Añade un ID a la lista de contactos recientes
+        function addContact(contactId) {
+            if (String(contactId) === String(userId)) return;
+            let contactsKey = DM_CONTACTS_KEY_PREFIX + userId;
+            let contacts = JSON.parse(localStorage.getItem(contactsKey) || '[]');
+            contactId = String(contactId);
+
+            const index = contacts.indexOf(contactId);
+            if (index > -1) {
+                contacts.splice(index, 1);
+            }
+            contacts.unshift(contactId);
+            
+            localStorage.setItem(contactsKey, JSON.stringify(contacts));
+        }
+
+
+        // --- LÓGICA DE UI Y RENDERIZADO (sin cambios mayores) ---
+
+        // Función de envío de mensaje con soporte para imágenes base64
+        async function sendMessage() {
+            const textInput = document.getElementById('messageInput');
+            const imageInput = document.getElementById('imageInput');
+            const text = textInput.value.trim();
+            const imageFile = imageInput.files[0];
+            const sendButton = document.getElementById('sendButton');
+
+            if (!text && !imageFile) return;
+            if (!currentDM) { window.alert('Debes abrir un DM primero.'); return; }
+            if (!db || !userId) { console.error("Firestore o Usuario no listos."); return; }
+            
+            sendButton.disabled = true; 
+            addContact(currentDM); 
+
+            const chatRef = getMessagesCollectionRef(currentDM);
+
+            const messageData = { 
+                sender: userId, 
+                text: text, 
+                timestamp: serverTimestamp() // V9
+            };
+
+            const saveMessageToFirebase = async (imageBase64 = null) => {
+                if (imageBase64) {
+                    messageData.image = imageBase64;
+                }
+
+                try {
+                    await addDoc(chatRef, messageData); // V9
+                    console.log("Mensaje enviado con éxito");
+                    textInput.value = '';
+                    imageInput.value = null; 
+                } catch (e) {
+                    console.error("Error al enviar el mensaje:", e);
+                    window.alert("Error al enviar el mensaje. Revisa tu conexión y las reglas de seguridad.");
+                } finally {
+                    sendButton.disabled = false;
+                }
+            };
+
+            if (imageFile) {
+                const reader = new FileReader();
+                reader.onload = function(e) { saveMessageToFirebase(e.target.result); };
+                reader.onerror = function(e) { 
+                    console.error("Error al leer la imagen:", e);
+                    window.alert("Error al cargar la imagen.");
+                    sendButton.disabled = false;
+                };
+                reader.readAsDataURL(imageFile);
+            } else {
+                saveMessageToFirebase();
+            }
+        } 
+
+        // Inicia o cambia a un DM específico
+        function selectDM(contactId) {
+            if (!db || !userId) return console.error("Firestore o usuario no listos.");
+            
+            currentDM = String(contactId);
+            updateModeLabel();
+            addContact(currentDM); 
+            updateDMList(); 
+            
+
+            if (unsubscribeFromChat) {
+                unsubscribeFromChat();
+            }
+
+            const chatRef = getMessagesCollectionRef(currentDM);
+            const q = query(chatRef, orderBy('timestamp')); // V9
+
+            // Listener en tiempo real (V9)
+            unsubscribeFromChat = onSnapshot(q, (snapshot) => {
+                const msgs = [];
+                snapshot.forEach(doc => {
+                    const data = doc.data();
+                    data.id = doc.id; 
+                    msgs.push(data);
+                });
+                renderMessages(msgs);
+            }, error => {
+                console.error("Error al escuchar mensajes. Revisa las reglas de seguridad:", error);
+                document.getElementById('messages').innerHTML = '<div style="text-align:center; color:#f23f43; padding:20px;">Error al cargar mensajes. Verifica la conexión y los permisos.</div>';
+            });
+
+            // Cerrar sidebar en móvil al seleccionar chat
+            if (window.innerWidth <= 768) {
+                toggleSidebar();
+            }
+        }
+        
+        // Función para eliminar un mensaje propio de Firestore
+        function deleteOwnMessage(messageId) {
+            showCustomModal(
+                'confirm',
+                'Eliminar Mensaje',
+                '¿Estás seguro de que quieres eliminar este mensaje? Esta acción es permanente.',
+                async (confirmed) => {
+                    if (!confirmed) return;
+
+                    if (!currentDM || !db) {
+                        window.alert("Error: Chat no seleccionado o Firestore no inicializado.");
+                        return;
+                    }
+
+                    try {
+                        const chatRef = getMessagesCollectionRef(currentDM);
+                        // El deleteDoc requiere una referencia de Documento
+                        const msgRef = doc(chatRef, messageId); 
+                        await deleteDoc(msgRef); 
+                        console.log("Mensaje eliminado con éxito:", messageId);
+                    } catch (error) {
+                        console.error("Error al eliminar el mensaje:", error);
+                        window.alert("Error al eliminar el mensaje. Revisa las Reglas de Seguridad para la operación 'delete'.");
+                    }
+                }
+            );
+        }
+
+        // --- FUNCIONES MODAL (Solo movidas fuera para ser globales) ---
+        const TRASH_SVG = `<svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#f23f43" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/></svg>`;
+        const PENCIL_SVG = `<svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#5865f2" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/></svg>`;
+        const ALERT_SVG = `<svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#ffc600" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>`;
+
+        function showCustomModal(type, title, message, callback, defaultValue = '') {
+            const modal = document.getElementById('customModal');
+            const modalTitle = document.getElementById('modalTitle');
+            const modalMessage = document.getElementById('modalMessage');
+            const modalInput = document.getElementById('modalInput');
+            const modalActions = document.getElementById('modalActions');
+            const modalIcon = document.getElementById('modalIcon');
+
+            modalTitle.textContent = title;
+            modalMessage.textContent = message;
+            modalActions.innerHTML = '';
+            modalInput.style.display = 'none';
+            modalIcon.innerHTML = '';
+
+            if (type === 'alert') {
+                modalIcon.innerHTML = ALERT_SVG; 
+                const okButton = document.createElement('button');
+                okButton.className = 'modal-btn btn-primary';
+                okButton.textContent = 'Aceptar';
+                okButton.onclick = () => { modal.classList.remove('active'); if (callback) callback(true); };
+                modalActions.appendChild(okButton);
+            } else if (type === 'confirm') {
+                modalIcon.innerHTML = TRASH_SVG; 
+                const cancelButton = document.createElement('button');
+                cancelButton.className = 'modal-btn btn-cancel';
+                cancelButton.textContent = 'Cancelar';
+                cancelButton.onclick = () => { modal.classList.remove('active'); if (callback) callback(false); };
+                const confirmButton = document.createElement('button');
+                confirmButton.className = 'modal-btn btn-danger';
+                confirmButton.textContent = 'Eliminar';
+                confirmButton.onclick = () => { modal.classList.remove('active'); if (callback) callback(true); };
+                modalActions.appendChild(cancelButton);
+                modalActions.appendChild(confirmButton);
+            } else if (type === 'input') {
+                modalIcon.innerHTML = PENCIL_SVG; 
+                modalInput.style.display = 'block';
+                modalInput.value = defaultValue;
+                modalInput.focus();
+                const cancelButton = document.createElement('button');
+                cancelButton.className = 'modal-btn btn-cancel';
+                cancelButton.textContent = 'Cancelar';
+                cancelButton.onclick = () => { modal.classList.remove('active'); if (callback) callback(null); };
+                const saveButton = document.createElement('button');
+                saveButton.className = 'modal-btn btn-primary';
+                saveButton.textContent = 'Guardar';
+                saveButton.onclick = () => { modal.classList.remove('active'); if (callback) callback(modalInput.value); };
+                modalInput.onkeypress = (e) => {
+                    if (e.key === 'Enter') saveButton.click();
+                };
+                modalActions.appendChild(cancelButton);
+                modalActions.appendChild(saveButton);
+            }
+            modal.classList.add('active');
+        }
+
+        window.alert = (message) => { showCustomModal('alert', 'Aviso', message); };
+
+        // --- Funciones de UI expuestas globalmente ---
+
+        window.toggleSidebar = function() {
+            const sidebar = document.getElementById('sidebar');
+            const overlay = document.getElementById('mobileOverlay');
+            const isActive = sidebar.classList.toggle('active');
+            overlay.classList.toggle('active', isActive);
+            document.body.style.overflow = isActive && window.innerWidth <= 768 ? 'hidden' : 'hidden'; 
+            if (!isActive) { document.body.style.overflow = 'hidden'; }
+        }
+
+        window.startDM = function() {
+            const targetId = document.getElementById('dmTargetId').value.trim();
+            if (!targetId || String(targetId) === String(userId)) {
+                window.alert('ID de usuario inválido o es tu propio ID.');
+                return;
+            }
+            selectDM(targetId);
+            document.getElementById('dmTargetId').value = ''; 
+        }
+
+        window.setAlias = function(id) {
+            const currentName = getAlias(id);
+            showCustomModal(
+                'input', 
+                'Editar Alias', 
+                `Ingresa un nuevo nombre/alias para el usuario ${id}:`, 
+                (newAlias) => {
+                    if (newAlias && newAlias.trim() !== "" && newAlias !== currentName) {
+                        saveAlias(id, newAlias.trim());
+                        updateDMList(); 
+                        if (String(currentDM) === String(id)) { updateModeLabel(); }
+                    }
+                }, 
+                currentName 
+            );
+        }
+
+        window.removeContact = function(contactId) {
+            const alias = getAlias(contactId);
+            showCustomModal(
+                'confirm',
+                'Eliminar Contacto',
+                `¿Estás seguro de que quieres eliminar a ${alias} (${contactId}) de tus contactos?`,
+                (confirmed) => {
+                    if (!confirmed) return;
+                    
+                    let contactsKey = DM_CONTACTS_KEY_PREFIX + userId;
+                    let contacts = JSON.parse(localStorage.getItem(contactsKey) || '[]');
+                    
+                    const index = contacts.indexOf(String(contactId));
+                    if (index > -1) {
+                        contacts.splice(index, 1);
+                        localStorage.setItem(contactsKey, JSON.stringify(contacts));
+                    }
+                    
+                    if (String(currentDM) === String(contactId)) {
+                        currentDM = null;
+                        if (unsubscribeFromChat) { unsubscribeFromChat(); document.getElementById('messages').innerHTML = ''; }
+                        updateModeLabel();
+                    }
+                    updateDMList();
+                }
+            );
+        }
+        
+        window.sendMessage = sendMessage;
+        window.deleteOwnMessage = deleteOwnMessage; // expuesto para uso en renderMessages
+
+        // Funciones de renderizado
+        function updateModeLabel() {
+            const label = document.getElementById('activeModeLabel');
+            let text;
+            if (currentDM) {
+                const alias = getAlias(currentDM);
+                text = `DM con ${alias} (${currentDM})`;
+            } else {
+                text = 'Ningún DM abierto';
+            }
+            label.textContent = text;
+            document.querySelectorAll('.dm-item').forEach(item => {
+                item.classList.remove('active');
+                if (item.dataset.id === currentDM) {
+                    item.classList.add('active');
+                }
+            });
+        }
+
+        function updateDMList() {
+            const listContainer = document.getElementById('dmList');
+            listContainer.innerHTML = ''; 
+            const contactsKey = DM_CONTACTS_KEY_PREFIX + userId;
+            const contacts = JSON.parse(localStorage.getItem(contactsKey) || '[]');
+            for (const contactId of contacts) {
+                if (String(contactId) === String(userId)) continue; 
+                const alias = getAlias(contactId);
+                const initials = getInitials(contactId);
+
+                const dmItem = document.createElement('div');
+                dmItem.className = 'dm-item';
+                dmItem.dataset.id = contactId;
+                
+                const avatar = document.createElement('div');
+                avatar.className = 'avatar';
+                avatar.textContent = initials;
+                
+                const textContainer = document.createElement('div');
+                textContainer.style.flexGrow = '1';
+                textContainer.innerHTML = `<div style="color:white; font-weight:600; max-width: 150px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">${alias}</div><div class="id-display">ID: ${contactId}</div>`;
+
+                const actionsContainer = document.createElement('div');
+                actionsContainer.className = 'actions';
+
+                const editButton = document.createElement('button');
+                editButton.className = 'alias-edit-btn';
+                editButton.title = 'Editar Alias';
+                editButton.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/></svg>`; 
+                editButton.onclick = (e) => { e.stopPropagation(); window.setAlias(contactId); };
+                actionsContainer.appendChild(editButton);
+                
+                const removeButton = document.createElement('button');
+                removeButton.className = 'remove-contact-btn';
+                removeButton.title = 'Eliminar Contacto';
+                removeButton.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/></svg>`;
+                removeButton.onclick = (e) => { e.stopPropagation(); window.removeContact(contactId); };
+                actionsContainer.appendChild(removeButton);
+
+                dmItem.appendChild(avatar);
+                dmItem.appendChild(textContainer);
+                dmItem.appendChild(actionsContainer);
+
+                dmItem.onclick = () => { selectDM(contactId); };
+
+                if (String(contactId) === String(currentDM)) { dmItem.classList.add('active'); }
+                listContainer.appendChild(dmItem);
+            }
+        }
+
+        function renderMessages(msgs) {
+            const container = document.getElementById('messages');
+            const isScrolledToBottom = container.scrollHeight - container.clientHeight <= container.scrollTop + 10; // +10 de margen
+            
+            container.innerHTML = '';
+            const fragment = document.createDocumentFragment();
+
+            for (const msg of msgs) {
+                const div = document.createElement('div');
+                div.className = 'message';
+                
+                const isOwnMessage = String(msg.sender) === String(userId);
+                
+                const initials = isOwnMessage ? 'T' : getInitials(msg.sender);
+                const avatar = document.createElement('div');
+                avatar.className = 'avatar';
+                avatar.textContent = initials;
+                div.appendChild(avatar);
+
+                const contentContainer = document.createElement('div');
+                contentContainer.className = 'message-content';
+
+                const info = document.createElement('div');
+                info.className = 'message-info';
+                
+                const senderName = document.createElement('span');
+                senderName.className = 'sender-name';
+                senderName.textContent = isOwnMessage ? 'Tú' : getAlias(msg.sender);
+                info.appendChild(senderName);
+
+                const time = document.createElement('span');
+                time.className = 'timestamp';
+                
+                // Los Timestamps de V9 tienen toDate()
+                const date = msg.timestamp && msg.timestamp.toDate ? new Date(msg.timestamp.toDate()) : new Date(); 
+                time.textContent = date.toLocaleTimeString('es-ES', {hour: '2-digit', minute:'2-digit', second:'2-digit', hour12: false}) + ' ' + date.toLocaleDateString('es-ES');
+                info.appendChild(time);
+                
+                contentContainer.appendChild(info);
+
+                if (msg.text) {
+                    const textContent = document.createElement('div');
+                    textContent.className = 'message-text';
+                    textContent.textContent = msg.text;
+                    contentContainer.appendChild(textContent);
+                }
+
+                if (msg.image) {
+                    const img = document.createElement('img');
+                    img.src = msg.image;
+                    img.className = 'chat-image';
+                    contentContainer.appendChild(img);
+                }
+
+                div.appendChild(contentContainer);
+
+                if (isOwnMessage && msg.id) { 
+                    const deleteButton = document.createElement('button');
+                    deleteButton.className = 'delete-message-btn';
+                    deleteButton.title = 'Eliminar este mensaje';
+                    deleteButton.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/></svg>`;
+                    // Usar window.deleteOwnMessage
+                    deleteButton.onclick = (e) => { e.stopPropagation(); window.deleteOwnMessage(msg.id); };
+                    div.appendChild(deleteButton);
+                }
+
+                fragment.appendChild(div);
+            }
+            container.appendChild(fragment);
+            
+            // Scroll al final si el usuario estaba cerca del final
+            if (isScrolledToBottom || container.children.length < 5) {
+                container.scrollTop = container.scrollHeight;
+            }
+        }
+
+
+        // --- INICIALIZACIÓN FINAL ---
+
+        // Listener para la tecla Enter
+        document.addEventListener('DOMContentLoaded', () => {
+            const messageInput = document.getElementById('messageInput');
+            const imageInput = document.getElementById('imageInput');
+
+            messageInput.addEventListener('keypress', function(e) {
+                if (e.key === 'Enter') {
+                    e.preventDefault(); 
+                    sendMessage();
+                }
+            });
+
+            imageInput.addEventListener('change', function() {
+                if (this.files.length > 0 && !messageInput.value.trim()) {
+                    sendMessage();
+                }
+            });
+            
+            // Iniciar Firebase después de que el DOM esté cargado
+            initializeFirebase();
+        });
+    </script>
+</body>
+</html>
