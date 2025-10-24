@@ -2,6 +2,7 @@
 <html lang="es">
 <head>
   <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Fendrox</title> 
   
   <!-- IMPORTS DE FIREBASE (Versión 8.6.8) -->
@@ -10,7 +11,7 @@
 
   <style>
     /* ------------------------------ */
-    /* ESTILOS BASE */
+    /* ESTILOS BASE Y RESPONSIVE */
     /* ------------------------------ */
     body {
       margin: 0;
@@ -19,19 +20,65 @@
       height: 100vh;
       background-color: #1e1f22;
       color: #dcddde;
+      flex-direction: row; /* Desktop/Tablet por defecto */
     }
 
-    /* ------------------------------ */
-    /* SIDEBAR Y LISTA DE DMs */
-    /* ------------------------------ */
+    /* BARRA LATERAL (SIDEBAR) */
     .sidebar {
       width: 260px;
+      flex-shrink: 0;
       background-color: #2f3136;
       padding: 20px;
       box-sizing: border-box;
       display: flex;
       flex-direction: column;
+      /* Animación para dispositivos móviles */
+      transition: transform 0.3s ease-in-out;
+      position: relative; /* Necesario para que el icono de menú funcione */
     }
+    
+    /* CHAT PRINCIPAL */
+    .chat {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      padding: 20px;
+      box-sizing: border-box;
+      min-width: 0; /* Asegura que el chat se adapte en pantallas pequeñas */
+    }
+
+    /* ESTILOS ESPECÍFICOS PARA MÓVILES */
+    @media (max-width: 768px) {
+        body {
+            flex-direction: column;
+        }
+        .sidebar {
+            width: 100%;
+            height: 100vh;
+            position: fixed;
+            z-index: 999;
+            transform: translateX(-100%); /* Ocultar por defecto en móvil */
+        }
+        .sidebar.open {
+            transform: translateX(0); /* Mostrar cuando esté abierto */
+        }
+        .chat {
+            width: 100%;
+            padding: 10px;
+        }
+        .header-mobile {
+            display: flex !important; /* Mostrar header en móvil */
+            margin-bottom: 10px;
+        }
+        .messages {
+            height: calc(100vh - 120px); /* Ajustar altura en móvil */
+            margin-bottom: 10px;
+        }
+    }
+
+    /* ------------------------------ */
+    /* BARRA LATERAL DETALLES */
+    /* ------------------------------ */
 
     .sidebar h2 {
       margin-bottom: 10px;
@@ -123,23 +170,30 @@
     }
 
     .dm-item.active .remove-contact-btn {
-      color: #ff6e6e; /* Rojo más brillante en estado activo */
+      color: #ff6e6e; 
     }
 
     .dm-item .id-display {
         font-size: 10px;
         color: #b9bbbe;
     }
+    
+    /* ------------------------------ */
+    /* CHAT, MENSAJES Y INPUTS */
+    /* ------------------------------ */
+    .header-mobile {
+        display: none;
+        align-items: center;
+        justify-content: space-between;
+        width: 100%;
+    }
 
-    /* ------------------------------ */
-    /* CHAT Y MENSAJES */
-    /* ------------------------------ */
-    .chat {
-      flex: 1;
-      display: flex;
-      flex-direction: column;
-      padding: 20px;
-      box-sizing: border-box;
+    .menu-btn {
+        background: none;
+        border: none;
+        color: white;
+        cursor: pointer;
+        padding: 5px;
     }
 
     .messages {
@@ -156,6 +210,14 @@
       padding: 8px 12px;
       background-color: #40444b;
       border-radius: 5px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      position: relative;
+    }
+    
+    .message-content {
+        flex-grow: 1;
     }
 
     .message span {
@@ -170,6 +232,21 @@
       margin-top: 4px;
       display: block;
     }
+
+    /* Botón de eliminar mensaje propio (NUEVO) */
+    .delete-message-btn {
+        background: none;
+        border: none;
+        color: #ff6e6e;
+        cursor: pointer;
+        padding: 4px;
+        margin-left: 10px;
+        flex-shrink: 0;
+    }
+    .delete-message-btn:hover {
+        color: #f04747;
+    }
+
 
     .input-area {
       display: flex;
@@ -222,7 +299,7 @@
     }
 
     /* ------------------------------ */
-    /* ESTILOS MODAL (NUEVO) */
+    /* ESTILOS MODAL MEJORADOS */
     /* ------------------------------ */
     .modal-overlay {
       position: fixed;
@@ -230,8 +307,8 @@
       left: 0;
       width: 100%;
       height: 100%;
-      background-color: rgba(0, 0, 0, 0.8);
-      display: none; /* Oculto por defecto */
+      background-color: rgba(0, 0, 0, 0.85); /* Un poco más oscuro */
+      display: none; 
       justify-content: center;
       align-items: center;
       z-index: 1000;
@@ -245,13 +322,14 @@
     }
 
     .modal-content {
-      background-color: #36393f;
+      background-color: #2f3136; /* Fondo más oscuro y consistente */
       padding: 30px;
-      border-radius: 10px;
+      border-radius: 12px; /* Más redondeado */
       width: 90%;
       max-width: 450px;
-      box-shadow: 0 5px 15px rgba(0, 0, 0, 0.5);
+      box-shadow: 0 8px 25px rgba(0, 0, 0, 0.6);
       text-align: center;
+      border: 1px solid #40444b; /* Borde sutil */
     }
 
     .modal-icon-container {
@@ -262,14 +340,14 @@
     }
 
     .modal-title {
-      font-size: 24px;
-      font-weight: bold;
+      font-size: 26px; /* Más grande */
+      font-weight: 700;
       color: white;
       margin-bottom: 10px;
     }
 
     .modal-message {
-      color: #dcddde;
+      color: #b9bbbe; /* Texto más suave */
       margin-bottom: 25px;
       line-height: 1.5;
     }
@@ -278,7 +356,7 @@
       width: 100%;
       padding: 10px;
       margin-bottom: 20px;
-      border: 1px solid #40444b;
+      border: none;
       border-radius: 6px;
       background-color: #40444b;
       color: white;
@@ -297,7 +375,10 @@
       border-radius: 6px;
       font-weight: bold;
       cursor: pointer;
-      transition: background-color 0.2s;
+      transition: background-color 0.2s, transform 0.1s;
+    }
+    .modal-btn:active {
+        transform: scale(0.98);
     }
 
     .btn-cancel {
@@ -309,7 +390,7 @@
     }
 
     .btn-primary {
-      background-color: #7289da; /* Azul principal */
+      background-color: #7289da; 
       color: white;
     }
     .btn-primary:hover {
@@ -317,17 +398,20 @@
     }
 
     .btn-danger {
-        background-color: #f04747; /* Rojo para acciones destructivas */
+        background-color: #f04747; 
         color: white;
     }
     .btn-danger:hover {
         background-color: #c93c3c;
     }
-
   </style>
 </head>
 <body>
-  <div class="sidebar">
+  
+  <div class="sidebar" id="sidebar">
+    <button class="menu-btn" onclick="toggleSidebar()" style="position: absolute; top: 10px; right: 10px; display: none;">
+        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+    </button>
     <h2>Fendrox</h2>
     <div class="section-title">Tu ID</div>
     <div class="dm-item" style="cursor:default;"><span id="userId"></span></div>
@@ -343,6 +427,13 @@
   </div>
 
   <div class="chat">
+    <div class="header-mobile" id="mobileHeader">
+        <button class="menu-btn" onclick="toggleSidebar()">
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="3" y1="12" x2="21" y2="12"></line><line x1="3" y1="6" x2="21" y2="6"></line><line x1="3" y1="18" x2="21" y2="18"></line></svg>
+        </button>
+        <div class="active-mode" id="activeModeLabelMobile">Ningún DM abierto</div>
+    </div>
+    
     <div class="active-mode" id="activeModeLabel">Ningún DM abierto</div>
     <div class="messages" id="messages"></div>
     <div class="input-area">
@@ -360,7 +451,7 @@
     </div>
   </div>
 
-  <!-- MODAL GLOBAL PERSONALIZADO (NUEVO) -->
+  <!-- MODAL GLOBAL PERSONALIZADO -->
   <div id="customModal" class="modal-overlay">
     <div class="modal-content">
       <div id="modalIcon" class="modal-icon-container">
@@ -399,7 +490,6 @@
     
     // El ID del usuario se mantiene al recargar (si existe)
     if (!userId) {
-        // Generar un ID simple de 4 dígitos para el ejemplo
         userId = String(Math.floor(1000 + Math.random() * 9000));
         localStorage.setItem(USER_ID_KEY, userId);
     }
@@ -409,9 +499,9 @@
     let aliases = JSON.parse(localStorage.getItem(ALIASES_KEY) || '{}');
     let unsubscribeFromChat = null; 
 
-    // --- FUNCIONES DE MODAL PERSONALIZADO (NUEVAS) ---
+    // --- FUNCIONES DE MODAL PERSONALIZADO ---
 
-    // Icono de Papelera SVG (para el modal de confirmación)
+    // Iconos SVG
     const TRASH_SVG = `
         <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#f04747" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
             <path d="M3 6h18"/>
@@ -420,10 +510,18 @@
         </svg>
     `;
 
-    // Icono de Lápiz SVG (para el modal de input)
     const PENCIL_SVG = `
         <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#7289da" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
             <path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/>
+        </svg>
+    `;
+    
+    // Icono para la alerta simple (NUEVO y estilizado)
+    const ALERT_SVG = `
+        <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#ffc600" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path>
+            <line x1="12" y1="9" x2="12" y2="13"></line>
+            <line x1="12" y1="17" x2="12.01" y2="17"></line>
         </svg>
     `;
 
@@ -443,10 +541,9 @@
       modalInput.style.display = 'none';
       modalIcon.innerHTML = '';
 
-
       // Configurar según el tipo de modal
       if (type === 'alert') {
-        modalIcon.innerHTML = ''; // Sin icono en alerta simple
+        modalIcon.innerHTML = ALERT_SVG; // Icono de alerta
         
         const okButton = document.createElement('button');
         okButton.className = 'modal-btn btn-primary';
@@ -463,14 +560,17 @@
         const cancelButton = document.createElement('button');
         cancelButton.className = 'modal-btn btn-cancel';
         cancelButton.textContent = 'Cancelar';
-        cancelButton.onclick = () => modal.classList.remove('active');
+        cancelButton.onclick = () => {
+            modal.classList.remove('active');
+            if (callback) callback(false); // Retorna falso en cancelar
+        };
         
         const confirmButton = document.createElement('button');
         confirmButton.className = 'modal-btn btn-danger';
         confirmButton.textContent = 'Eliminar';
         confirmButton.onclick = () => {
           modal.classList.remove('active');
-          if (callback) callback(true);
+          if (callback) callback(true); // Retorna verdadero en confirmar
         };
         
         modalActions.appendChild(cancelButton);
@@ -486,7 +586,10 @@
         const cancelButton = document.createElement('button');
         cancelButton.className = 'modal-btn btn-cancel';
         cancelButton.textContent = 'Cancelar';
-        cancelButton.onclick = () => modal.classList.remove('active');
+        cancelButton.onclick = () => {
+            modal.classList.remove('active');
+            if (callback) callback(null);
+        };
         
         const saveButton = document.createElement('button');
         saveButton.className = 'modal-btn btn-primary';
@@ -509,22 +612,47 @@
       modal.classList.add('active');
     }
 
-    // Función de reemplazo para alert
+    // Reemplazos de funciones nativas con modales
     window.alert = (message) => {
         showCustomModal('alert', 'Aviso', message);
     };
 
-    // Función de reemplazo para confirm (no usada, pero buena práctica)
-    // window.confirm = (message) => {
-    //     return new Promise(resolve => showCustomModal('confirm', 'Confirmación', message, resolve));
-    // };
-
-    // Función de reemplazo para prompt (no usada, pero buena práctica)
-    // window.prompt = (message, defaultValue = '') => {
-    //     return new Promise(resolve => showCustomModal('input', 'Ingresar valor', message, resolve, defaultValue));
-    // };
-
     // --- Funciones Auxiliares ---
+    
+    // Función para manejar el diseño responsive (NUEVO)
+    function checkResponsiveLayout() {
+        const sidebar = document.getElementById('sidebar');
+        const mobileHeader = document.getElementById('mobileHeader');
+
+        if (window.innerWidth <= 768) {
+            mobileHeader.style.display = 'flex';
+            sidebar.style.position = 'fixed';
+            // Asegura que el sidebar esté oculto por defecto
+            if (!sidebar.classList.contains('open')) {
+                sidebar.style.transform = 'translateX(-100%)';
+            }
+        } else {
+            mobileHeader.style.display = 'none';
+            sidebar.style.position = 'relative';
+            sidebar.style.transform = 'translateX(0)';
+            sidebar.classList.remove('open'); // Quitar clase 'open' en desktop
+        }
+    }
+
+    // Toggle para mostrar/ocultar el menú lateral en móvil (NUEVO)
+    function toggleSidebar() {
+        const sidebar = document.getElementById('sidebar');
+        sidebar.classList.toggle('open');
+        // Muestra el botón de cerrar en el sidebar si está abierto
+        const closeBtn = sidebar.querySelector('.menu-btn');
+        if (sidebar.classList.contains('open')) {
+             closeBtn.style.display = 'block';
+        } else {
+             closeBtn.style.display = 'none';
+        }
+    }
+
+
     function getDMKey(id1, id2) {
       const sorted = [String(id1), String(id2)].sort();
       return `${sorted[0]}_${sorted[1]}`;
@@ -539,7 +667,7 @@
         localStorage.setItem(ALIASES_KEY, JSON.stringify(aliases));
     }
 
-    // MODAL para editar alias (reemplaza 'prompt')
+    // MODAL para editar alias
     function setAlias(id) {
         const currentName = getAlias(id);
         
@@ -560,7 +688,7 @@
         );
     }
     
-    // MODAL para eliminar contacto (reemplaza 'confirm')
+    // MODAL para eliminar contacto
     function removeContact(contactId) {
         const alias = getAlias(contactId);
 
@@ -611,12 +739,19 @@
 
     function updateModeLabel() {
       const label = document.getElementById('activeModeLabel');
+      const labelMobile = document.getElementById('activeModeLabelMobile');
+
+      let text;
       if (currentDM) {
         const alias = getAlias(currentDM);
-        label.textContent = `DM con ${alias} (${currentDM})`;
+        text = `DM con ${alias} (${currentDM})`;
       } else {
-        label.textContent = 'Ningún DM abierto';
+        text = 'Ningún DM abierto';
       }
+      
+      label.textContent = text;
+      labelMobile.textContent = text; // Actualiza el label móvil
+
       document.querySelectorAll('.dm-item').forEach(item => {
         item.classList.remove('active');
         if (item.dataset.id === currentDM) {
@@ -658,7 +793,7 @@
         `; 
         editButton.onclick = (e) => {
             e.stopPropagation(); 
-            setAlias(contactId); // Ahora llama a la función con modal
+            setAlias(contactId); 
         };
         actionsContainer.appendChild(editButton);
         
@@ -675,7 +810,7 @@
         `;
         removeButton.onclick = (e) => {
             e.stopPropagation();
-            removeContact(contactId); // Ahora llama a la función con modal
+            removeContact(contactId); 
         };
         actionsContainer.appendChild(removeButton);
 
@@ -684,6 +819,9 @@
 
         dmItem.onclick = () => {
           selectDM(contactId);
+          if (window.innerWidth <= 768) {
+            toggleSidebar(); // Ocultar sidebar al seleccionar DM en móvil
+          }
         };
 
         if (String(contactId) === String(currentDM)) {
@@ -694,6 +832,34 @@
       }
     }
 
+    // NUEVA FUNCION: Eliminar mensaje
+    function deleteOwnMessage(messageId) {
+        showCustomModal(
+            'confirm',
+            'Eliminar Mensaje',
+            '¿Estás seguro de que quieres eliminar este mensaje? Esta acción es permanente.',
+            (confirmed) => {
+                if (!confirmed) return;
+
+                if (!currentDM || !db) {
+                    alert("Error: Chat no seleccionado o Firestore no inicializado.");
+                    return;
+                }
+
+                const chatRoomId = getDMKey(userId, currentDM);
+                const msgRef = db.collection('chats').doc(chatRoomId).collection('messages').doc(messageId);
+
+                msgRef.delete().then(() => {
+                    console.log("Mensaje eliminado con éxito:", messageId);
+                }).catch((error) => {
+                    console.error("Error al eliminar el mensaje:", error);
+                    alert("Error al eliminar el mensaje. Revisa las Reglas de Seguridad para la operación 'delete'.");
+                });
+            }
+        );
+    }
+
+
     function renderMessages(msgs) {
       const container = document.getElementById('messages');
       container.innerHTML = '';
@@ -703,26 +869,51 @@
         div.className = 'message';
         
         let senderLabel;
-        if (String(msg.sender) === String(userId)) {
+        const isOwnMessage = String(msg.sender) === String(userId);
+        if (isOwnMessage) {
             senderLabel = 'Tú';
         } else {
             senderLabel = getAlias(msg.sender);
         }
 
-        div.innerHTML = `<span>${senderLabel}:</span> ${msg.text || ''}`;
+        const contentContainer = document.createElement('div');
+        contentContainer.className = 'message-content';
+
+        const textContent = document.createElement('div');
+        textContent.innerHTML = `<span>${senderLabel}:</span> ${msg.text || ''}`;
+        contentContainer.appendChild(textContent);
+
 
         if (msg.image) {
           const img = document.createElement('img');
           img.src = msg.image;
           img.className = 'chat-image';
-          div.appendChild(img);
+          contentContainer.appendChild(img);
         }
 
         const time = document.createElement('span');
         time.className = 'timestamp';
         const date = msg.timestamp && msg.timestamp.toDate ? new Date(msg.timestamp.toDate()) : new Date();
         time.textContent = date.toLocaleString();
-        div.appendChild(time);
+        contentContainer.appendChild(time);
+        
+        div.appendChild(contentContainer);
+
+
+        // Botón de eliminar (SOLO para mensajes propios, NUEVO)
+        if (isOwnMessage && msg.id) { // msg.id debe venir del onSnapshot
+            const deleteButton = document.createElement('button');
+            deleteButton.className = 'delete-message-btn';
+            deleteButton.title = 'Eliminar este mensaje';
+            deleteButton.innerHTML = `
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/>
+                </svg>
+            `;
+            deleteButton.onclick = () => deleteOwnMessage(msg.id);
+            div.appendChild(deleteButton);
+        }
+
 
         container.appendChild(div);
       }
@@ -742,10 +933,13 @@
         const chatRoomId = getDMKey(userId, currentDM);
         const chatRef = db.collection('chats').doc(chatRoomId).collection('messages');
         
+        // Aquí es importante usar snapshot.forEach para obtener el ID del documento (doc.id)
         unsubscribeFromChat = chatRef.orderBy('timestamp').onSnapshot(snapshot => {
             const msgs = [];
             snapshot.forEach(doc => {
-                msgs.push(doc.data());
+                const data = doc.data();
+                data.id = doc.id; // Añadir el ID del documento para la eliminación
+                msgs.push(data);
             });
             renderMessages(msgs);
         }, error => {
@@ -765,12 +959,12 @@
 
       if (!text && !imageFile) return;
       if (!currentDM) {
-          alert('Debes abrir un DM primero.'); // Usa la nueva alerta personalizada
+          alert('Debes abrir un DM primero.'); 
           return;
       }
       if (!db) {
         console.error("Firestore no está inicializado.");
-        alert("Error de conexión: Firestore no está listo."); // Usa la nueva alerta personalizada
+        alert("Error de conexión: Firestore no está listo."); 
         return;
       }
       
@@ -800,7 +994,7 @@
             
         } catch (error) {
             console.error("❌ Error al enviar el mensaje. Revisa las reglas de escritura (write rules) de Firestore:", error);
-            alert("Hubo un error al enviar el mensaje. Por favor, revisa la Consola del Navegador (F12) y las Reglas de Firebase."); // Usa la nueva alerta personalizada
+            alert("Hubo un error al enviar el mensaje. Por favor, revisa la Consola del Navegador (F12) y las Reglas de Firebase."); 
         } finally {
             sendButton.disabled = false; 
         }
@@ -822,7 +1016,7 @@
       const targetId = targetIdInput.value.trim();
       
       if (!targetId || isNaN(targetId) || String(targetId) === String(userId)) {
-        alert('Por favor, ingresa un ID de usuario válido y diferente al tuyo.'); // Usa la nueva alerta personalizada
+        alert('Por favor, ingresa un ID de usuario válido y diferente al tuyo.'); 
         return;
       }
       
@@ -833,14 +1027,14 @@
     }
 
     // --- Lógica de Inicialización ---
-    // Se ejecuta al cargar el script
-
+    
     try {
         firebase.initializeApp(firebaseConfig);
         db = firebase.firestore(); 
         console.log("✅ Conexión a Firebase Firestore exitosa.");
-        // Cargar la lista de DMs al cargar la página
         updateDMList();
+        checkResponsiveLayout();
+        window.addEventListener('resize', checkResponsiveLayout);
     } catch (e) {
         console.error("❌ ERROR CRÍTICO DE INICIALIZACIÓN DE FIREBASE.", e);
         document.getElementById('messages').innerHTML = '<div style="color: red; padding: 20px;">ERROR CRÍTICO: No se pudo conectar a Firebase. Revisa la consola (F12).</div>';
