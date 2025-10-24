@@ -60,6 +60,8 @@
 
     .dm-list {
       margin-top: 10px;
+      overflow-y: auto; /* Permite desplazamiento si hay muchos DMs */
+      flex-grow: 1; /* Permite que la lista crezca */
     }
 
     .dm-item {
@@ -70,7 +72,12 @@
       cursor: pointer;
     }
 
-    .dm-item:hover {
+    .dm-item.active { /* Estilo para el DM activo */
+      background-color: #5b6eae;
+      color: white;
+    }
+    
+    .dm-item:not(.active):hover {
       background-color: #7289da;
     }
 
@@ -199,29 +206,56 @@
   </div>
 
   <script>
+    // --- Inicialización del Usuario ---
     let userId = localStorage.getItem('conclave_user_id');
     if (!userId) {
-      userId = Math.floor(1000 + Math.random() * 9000);
+      // Generar un ID de 4 dígitos (1000 a 9999)
+      userId = String(Math.floor(1000 + Math.random() * 9000));
       localStorage.setItem('conclave_user_id', userId);
     }
     document.getElementById('userId').textContent = userId;
 
     let currentDM = null;
+    const DM_CONTACTS_KEY = `conclave_dm_contacts_${userId}`;
+
+    // --- Funciones Auxiliares ---
 
     function getDMKey(id1, id2) {
-      const sorted = [id1, id2].sort();
+      // Ordena los IDs para tener una clave consistente para el localStorage
+      const sorted = [String(id1), String(id2)].sort();
       return `dm_${sorted[0]}_${sorted[1]}`;
     }
 
-    function startDM() {
-      const targetId = document.getElementById('dmTargetId').value.trim();
-      if (!targetId || isNaN(targetId)) return;
-      currentDM = targetId;
-      renderMessages();
-      updateModeLabel();
-      document.getElementById('dmTargetId').value = '';
+    // Almacena una lista de todos los IDs con los que el usuario ha chateado
+    function addContact(contactId) {
+      if (String(contactId) === String(userId)) return; // Evita agregarse a sí mismo
+      let contacts = JSON.parse(localStorage.getItem(DM_CONTACTS_KEY) || '[]');
+      contactId = String(contactId);
+
+      if (!contacts.includes(contactId)) {
+        contacts.push(contactId);
+        localStorage.setItem(DM_CONTACTS_KEY, JSON.stringify(contacts));
+      }
     }
 
+    // --- Gestión de la Interfaz ---
+
+    function updateModeLabel() {
+      const label = document.getElementById('activeModeLabel');
+      if (currentDM) {
+        label.textContent = `DM con Anonymous (${currentDM})`;
+      } else {
+        label.textContent = 'Ningún DM abierto';
+      }
+      // Actualizar la clase 'active' en la lista de DMs
+      document.querySelectorAll('.dm-item').forEach(item => {
+        item.classList.remove('active');
+        if (item.dataset.id === currentDM) {
+          item.classList.add('active');
+        }
+      });
+    }
+    
     function renderMessages() {
       const container = document.getElementById('messages');
       container.innerHTML = '';
@@ -233,7 +267,9 @@
       for (const msg of msgs) {
         const div = document.createElement('div');
         div.className = 'message';
-        div.innerHTML = `<span>Anonymous (${msg.sender}):</span> ${msg.text || ''}`;
+        const senderLabel = (String(msg.sender) === String(userId)) ? 'Tú' : `Anonymous (${msg.sender})`;
+
+        div.innerHTML = `<span>${senderLabel}:</span> ${msg.text || ''}`;
 
         if (msg.image) {
           const img = document.createElement('img');
@@ -251,6 +287,54 @@
       }
       container.scrollTop = container.scrollHeight;
     }
+    
+    function updateDMList() {
+      const listContainer = document.getElementById('dmList');
+      listContainer.innerHTML = ''; // Limpiar la lista existente
+      
+      const contacts = JSON.parse(localStorage.getItem(DM_CONTACTS_KEY) || '[]');
+
+      for (const contactId of contacts) {
+        if (String(contactId) === String(userId)) continue; // Por si acaso
+
+        const dmItem = document.createElement('div');
+        dmItem.className = 'dm-item';
+        dmItem.dataset.id = contactId;
+        dmItem.textContent = `Anonymous (${contactId})`;
+        dmItem.onclick = () => {
+          selectDM(contactId);
+        };
+
+        if (String(contactId) === String(currentDM)) {
+            dmItem.classList.add('active');
+        }
+
+        listContainer.appendChild(dmItem);
+      }
+    }
+
+    // --- Gestión de Eventos ---
+
+    function selectDM(contactId) {
+        currentDM = String(contactId);
+        renderMessages();
+        updateModeLabel();
+    }
+
+    function startDM() {
+      const targetIdInput = document.getElementById('dmTargetId');
+      const targetId = targetIdInput.value.trim();
+      
+      if (!targetId || isNaN(targetId) || String(targetId) === String(userId)) {
+        alert('Por favor, ingresa un ID de usuario válido y diferente al tuyo.');
+        return;
+      }
+      
+      addContact(targetId);
+      selectDM(targetId);
+      targetIdInput.value = ''; // Limpiar el input
+      updateDMList(); // Actualizar la lista para mostrar el nuevo DM
+    }
 
     function sendMessage() {
       const textInput = document.getElementById('messageInput');
@@ -259,40 +343,44 @@
       const imageFile = imageInput.files[0];
 
       if (!text && !imageFile) return;
-      if (!currentDM) return;
+      if (!currentDM) {
+          alert('Debes abrir un DM primero.');
+          return;
+      }
+      
+      // Asegurarse de que el contacto esté en la lista antes de enviar
+      addContact(currentDM); 
 
       const key = getDMKey(userId, currentDM);
       const msgs = JSON.parse(localStorage.getItem(key) || '[]');
       const timestamp = Date.now();
 
+      const saveMessage = (imageBase64 = null) => {
+        msgs.push({ sender: userId, text, image: imageBase64, timestamp });
+        localStorage.setItem(key, JSON.stringify(msgs));
+        
+        // Limpiar inputs
+        textInput.value = '';
+        imageInput.value = '';
+        
+        renderMessages();
+        updateDMList(); // Re-renderizar la lista para asegurar que el contacto está visible
+      };
+
       if (imageFile) {
         const reader = new FileReader();
         reader.onload = function (e) {
-          const base64 = e.target.result;
-          msgs.push({ sender: userId, text, image: base64, timestamp });
-          localStorage.setItem(key, JSON.stringify(msgs));
-          updateDMList(currentDM);
-          textInput.value = '';
-          imageInput.value = '';
-          renderMessages();
+          saveMessage(e.target.result);
         };
         reader.readAsDataURL(imageFile);
       } else {
-        msgs.push({ sender: userId, text, timestamp });
-        localStorage.setItem(key, JSON.stringify(msgs));
-        updateDMList(currentDM);
-        textInput.value = '';
-        renderMessages();
+        saveMessage();
       }
     }
-
-    function updateModeLabel() {
-      const label = document.getElementById('activeModeLabel');
-      label.textContent = `DM con Anonymous (${currentDM})`;
-    }
-
-    function updateDMList(fromId) {
-      const list = document.getElementById('dmList');
-      const existing = Array.from(list.children).map(el => el.dataset.id);
-      if (existing.includes(fromId)) return;
-
+    
+    // Iniciar: Cargar la lista de DMs al cargar la página
+    updateDMList();
+    
+  </script>
+</body>
+</html>
