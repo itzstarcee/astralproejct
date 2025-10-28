@@ -3,7 +3,13 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Fendrox Móvil</title> 
+  <title>Fendrox Móvil - Chat Operativo</title>
+  <!-- Load Tailwind CSS for utility classes -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Load Inter Font -->
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@100..900&display=swap');
+  </style>
   
   <style>
     /* ------------------------------ */
@@ -35,7 +41,7 @@
       display: flex;
       flex-direction: column;
       border-right: 1px solid #2f3136; 
-      transition: transform 0.3s ease; /* Para animación móvil */
+      /* No mobile transition logic here to keep original look */
     }
 
     /* HEADER del Sidebar */
@@ -67,13 +73,10 @@
         font-weight: 500;
     }
     .user-info-panel .id-display {
-        font-size: 16px;
-        color: white;
+        font-size: 11px; /* Smaller font for long IDs */
+        color: #8c72ff; /* Highlighted color */
         font-weight: 700;
-        letter-spacing: 0.5px;
-        overflow: hidden;
-        text-overflow: ellipsis;
-        white-space: nowrap;
+        word-break: break-all;
     }
 
 
@@ -82,8 +85,6 @@
       flex: 1;
       display: flex;
       flex-direction: column;
-      padding: 15px;
-      box-sizing: border-box;
       min-width: 0; 
       background-color: #2f3136;
       position: relative; 
@@ -104,1167 +105,523 @@
       padding-top: 5px;
       border-top: 1px solid #2b2d31; /* Separador sutil */
     }
-    .dm-controls .section-title {
-        border-top: none;
-        padding-top: 0;
-    }
-
-
-    /* Sección de controles de DM */
-    .dm-controls {
-        padding-bottom: 10px;
-        /* border-bottom: 1px solid #2b2d31; Removido para más limpieza */
-    }
-
-    .dm-controls input {
-      width: 100%;
-      margin-bottom: 10px;
-      padding: 10px;
-      border: 1px solid #36393f; /* Borde más visible */
-      border-radius: 8px;
-      background-color: #40444b; /* Fondo más claro que el sidebar */
-      color: white;
-      box-shadow: none;
-      transition: border-color 0.2s;
-      box-sizing: border-box; /* Asegura que el padding no añada al width */
-    }
-    .dm-controls input:focus {
-        border-color: #5865f2;
-        background-color: #36393f;
-    }
-    
-    .dm-controls button {
-      width: 100%;
-      padding: 10px;
-      border: none;
-      border-radius: 8px;
-      background-color: #5865f2;
-      color: white;
-      font-weight: 700;
-      cursor: pointer;
-      transition: background-color 0.2s, transform 0.1s;
-    }
-
-    .dm-controls button:hover {
-      background-color: #4752c4;
-    }
-    .dm-controls button:active {
-        transform: translateY(1px);
-    }
-
-    .dm-list {
-      margin-top: 10px;
-      overflow-y: auto;
-      flex-grow: 1;
-      scrollbar-width: thin;
-      scrollbar-color: #2b2d31 #202225;
-      margin-right: -10px; /* Compensa el scrollbar */
-      padding-right: 10px;
-    }
-    /* Estilos de scrollbar (Webkit) */
-    .dm-list::-webkit-scrollbar {
-        width: 8px;
-    }
-    .dm-list::-webkit-scrollbar-track {
-        background: #202225;
-    }
-    .dm-list::-webkit-scrollbar-thumb {
-        background-color: #2b2d31;
-        border-radius: 20px;
-        border: 2px solid #202225;
-    }
-
-
-    .dm-item {
-      padding: 10px;
-      margin-bottom: 5px;
-      background-color: transparent;
-      border-radius: 8px;
-      cursor: pointer;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      transition: background-color 0.2s;
-    }
-    
-    .dm-item:hover:not(.active) {
-      background-color: #36393f;
-    }
-
-    .dm-item.active {
-      background-color: #40444b;
-      color: white;
-      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
-    }
-    
-    .dm-item .id-display {
-        font-size: 10px;
-        color: #b9bbbe;
-        margin-top: 2px;
-    }
-    
-    .dm-item .actions {
-        display: flex;
-        gap: 5px;
-        opacity: 0; /* Ocultar en reposo */
-        transition: opacity 0.2s;
-    }
-
-    .dm-item:hover .actions {
-        opacity: 1; /* Mostrar al pasar el ratón */
-    }
-
-    .dm-item .alias-edit-btn, .dm-item .remove-contact-btn {
-      background: none;
-      border: none;
-      color: #b9bbbe;
-      cursor: pointer;
-      padding: 0; 
-      line-height: 1;
-      transition: color 0.2s;
-    }
-
-    .dm-item .alias-edit-btn:hover { color: #5865f2; }
-    .dm-item .remove-contact-btn:hover { color: #f23f43; }
-    
-    /* Avatar simple */
-    .avatar {
-        width: 40px;
-        height: 40px;
-        border-radius: 50%;
-        background-color: #5865f2;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        font-weight: bold;
-        color: white;
-        font-size: 18px;
-        flex-shrink: 0;
-        margin-right: 10px;
-        box-shadow: 0 0 5px rgba(0, 0, 0, 0.2);
-    }
-    
-    /* ------------------------------ */
-    /* CHAT HEADER & MESSAGES */
-    /* ------------------------------ */
-
-    .chat-header {
-        display: flex;
-        align-items: center;
-        gap: 10px;
-        font-size: 16px;
-        font-weight: 600;
-        color: #b9bbbe;
-        margin-bottom: 15px;
-        padding-bottom: 10px;
-        border-bottom: 1px solid #40444b;
-    }
-    
-    /* Botón de Menu (Solo visible en móvil) */
-    .menu-toggle-btn {
-        display: none; 
-        background: none;
-        border: none;
-        color: white;
+    .contact-item, .channel-item {
+        padding: 8px 10px;
+        border-radius: 4px;
         cursor: pointer;
-        padding: 5px;
+        font-size: 16px;
+        color: #dcddde;
+        margin-bottom: 4px;
+        transition: background-color 0.2s;
+        display: flex;
+        align-items: center;
+    }
+    .contact-item:hover, .channel-item:hover {
+        background-color: #40444b;
+    }
+    .channel-item.active {
+        background-color: #5865f2;
+        color: white;
+        font-weight: 600;
+    }
+    .channel-icon {
+        margin-right: 8px;
+        color: #b9bbbe;
+    }
+    .channel-item.active .channel-icon {
+        color: white;
     }
 
-    .messages {
+    /* ------------------------------ */
+    /* AREA DE MENSAJES */
+    /* ------------------------------ */
+    .messages-container {
       flex: 1;
       overflow-y: auto;
-      padding-right: 15px;
-      background-color: #2f3136;
-    }
-    .messages::-webkit-scrollbar {
-        width: 10px;
-    }
-    .messages::-webkit-scrollbar-track {
-        background: #2f3136;
-    }
-    .messages::-webkit-scrollbar-thumb {
-        background-color: #40444b;
-        border-radius: 20px;
-        border: 3px solid #2f3136;
+      padding: 15px;
+      padding-bottom: 100px; /* Espacio para el input */
+      -webkit-overflow-scrolling: touch;
     }
 
     .message {
+      display: flex;
       margin-bottom: 15px;
-      padding: 5px 0;
-      display: flex;
       align-items: flex-start;
-      line-height: 1.4;
-      position: relative;
-    }
-    
-    .message-content {
-        flex-grow: 1;
-        display: flex;
-        flex-direction: column;
     }
 
-    .message-info {
-        display: flex;
-        align-items: center;
-        margin-bottom: 2px;
-    }
-    
-    .sender-name {
-      font-weight: 700;
-      color: #7289da;
-      font-size: 15px;
-      margin-right: 8px;
-    }
-    
-    .timestamp {
-      font-size: 11px;
-      color: #8e9297;
-      font-weight: 400;
-      opacity: 0.8;
-    }
-    
-    .message-text {
-        color: #dcddde;
-        word-wrap: break-word;
-        max-width: 100%;
-    }
-
-    img.chat-image {
-      max-width: 100%;
-      max-height: 300px;
-      object-fit: contain;
-      margin-top: 10px;
-      border-radius: 8px;
-      border: 1px solid #40444b;
-    }
-
-    /* Botón de eliminar mensaje propio */
-    .delete-message-btn {
-        position: absolute;
-        right: 15px;
-        top: 8px;
-        background: #36393f;
-        border: none;
-        color: #f23f43;
-        cursor: pointer;
-        padding: 5px;
-        border-radius: 4px;
-        opacity: 0;
-        transition: opacity 0.2s, background-color 0.2s;
-    }
-    .message:hover .delete-message-btn {
-        opacity: 1;
-    }
-    .delete-message-btn:hover {
-        background-color: #4e5055;
-    }
-
-    /* ------------------------------ */
-    /* AREA DE INPUT Y BOTONES */
-    /* ------------------------------ */
-    .input-area {
-      display: flex;
-      gap: 10px;
-      align-items: center;
-      padding: 10px 15px;
-      background-color: #36393f;
-      border-radius: 8px;
-      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
-      margin-top: 15px;
-    }
-
-    .input-area input[type="text"] {
-      flex: 1;
-      padding: 8px 0;
-      border: none;
-      background-color: transparent;
-      color: white;
-      font-size: 16px;
-      outline: none;
-    }
-
-    .input-area input::placeholder {
-      color: #8e9297;
-    }
-
-    .input-area label {
-      background: none;
-      color: #5865f2; 
-      padding: 0;
-      cursor: pointer;
-      font-size: 14px;
+    .avatar {
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      background-color: #5865f2; /* Color de avatar por defecto */
       display: flex;
       align-items: center;
-      transition: color 0.2s;
-    }
-    .input-area label:hover {
-        color: #7289da;
-    }
-
-    .input-area input[type="file"] {
-      display: none;
-    }
-    
-    .input-area .send-button {
-      padding: 8px;
-      border: none;
-      border-radius: 6mm;
-      background-color: #43b581;
-      color: white;
-      cursor: pointer;
-      transition: background-color 0.2s ease, transform 0.1s;
-      flex-shrink: 0; 
-      display: flex;
-      align-items: center;
-    }
-
-    .input-area .send-button:hover {
-      background-color: #3aa876; 
-    }
-    
-    .input-area .send-button:active {
-        transform: scale(0.95);
-    }
-    
-    .input-area .send-button:disabled {
-        background-color: #5d7e6f;
-        cursor: not-allowed;
-    }
-
-
-    /* ------------------------------ */
-    /* ESTILOS RESPONSIVE (MÓVIL) */
-    /* ------------------------------ */
-    @media (max-width: 768px) {
-        
-        /* Oculta la barra lateral y la posiciona fuera de la pantalla */
-        .sidebar {
-            position: fixed;
-            top: 0;
-            left: 0;
-            height: 100%;
-            width: 85vw; /* Ocupa la mayor parte de la pantalla */
-            z-index: 50; 
-            transform: translateX(-100%);
-            box-shadow: 2px 0 10px rgba(0, 0, 0, 0.5);
-            padding-bottom: 15px; 
-        }
-        
-        /* Muestra la barra lateral cuando tiene la clase 'active' */
-        .sidebar.active {
-            transform: translateX(0);
-        }
-        
-        /* El chat ocupa todo el espacio en móvil */
-        .chat {
-            width: 100vw;
-            padding: 10px;
-        }
-
-        /* Muestra el botón de menú en móvil */
-        .menu-toggle-btn {
-            display: block;
-            margin-right: 10px; 
-            font-size: 20px;
-        }
-
-        /* Overlay para cuando el menú está abierto */
-        .overlay-mobile {
-            display: none;
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100vw;
-            height: 100vh;
-            background-color: rgba(0, 0, 0, 0.7);
-            z-index: 40; 
-        }
-        .overlay-mobile.active {
-            display: block;
-        }
-    }
-
-
-    /* ------------------------------ */
-    /* ESTILOS MODAL PERSONALIZADO */
-    /* ------------------------------ */
-    .modal-overlay {
-      position: fixed;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      background-color: rgba(0, 0, 0, 0.85); 
-      display: none; 
       justify-content: center;
-      align-items: center;
-      z-index: 1000;
-      opacity: 0;
-      transition: opacity 0.2s ease;
-    }
-
-    .modal-overlay.active {
-      display: flex;
-      opacity: 1;
-    }
-
-    .modal-content {
-      background-color: #2f3136; 
-      padding: 30px;
-      border-radius: 12px; 
-      width: 90%;
-      max-width: 450px;
-      box-shadow: 0 8px 25px rgba(0, 0, 0, 0.6);
-      text-align: center;
-      border: 1px solid #40444b; 
-    }
-
-    .modal-icon-container {
-      margin-bottom: 20px;
-    }
-    .modal-icon-container svg {
-      /* Estilo de color definido en SVG */
-    }
-
-    .modal-title {
-      font-size: 26px; 
       font-weight: 700;
       color: white;
-      margin-bottom: 10px;
+      font-size: 14px;
+      flex-shrink: 0;
+      margin-right: 12px;
     }
 
-    .modal-message {
-      color: #b9bbbe; 
-      margin-bottom: 25px;
-      line-height: 1.5;
-    }
-    
-    .modal-input {
-      width: 100%;
-      padding: 10px;
-      margin-bottom: 20px;
-      border: none;
-      border-radius: 6px;
-      background-color: #40444b;
-      color: white;
-      box-sizing: border-box;
+    .message-content {
+      flex: 1;
+      min-width: 0;
     }
 
-    .modal-actions {
+    .message-header {
       display: flex;
-      justify-content: flex-end;
-      gap: 15px;
+      align-items: baseline;
+      margin-bottom: 4px;
     }
 
-    .modal-btn {
+    .message-author {
+      font-weight: 700;
+      color: #5865f2;
+      font-size: 16px;
+      margin-right: 8px;
+      cursor: pointer;
+    }
+
+    .message-time {
+      font-size: 12px;
+      color: #949ba4;
+    }
+
+    .message-text {
+      font-size: 15px;
+      color: #dcddde;
+      word-wrap: break-word;
+      line-height: 1.4;
+    }
+
+    /* ------------------------------ */
+    /* AREA DE INPUT DE MENSAJES */
+    /* ------------------------------ */
+    .message-input-area {
+      background-color: #383a40; 
+      padding: 10px 15px;
+      border-top: 1px solid #40444b;
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      right: 0;
+    }
+
+    .input-form-inner {
+        display: flex;
+        gap: 10px;
+        max-width: 1000px; /* Limitar ancho del input */
+        margin: 0 auto;
+    }
+
+    #message-input {
+      flex: 1;
+      padding: 12px 15px;
+      border-radius: 8px;
+      border: none;
+      background-color: #40444b;
+      color: #dcddde;
+      font-size: 16px;
+      resize: none;
+      min-height: 44px;
+      max-height: 150px;
+      overflow-y: auto;
+    }
+    #message-input::placeholder {
+      color: #b9bbbe;
+    }
+
+    .send-button {
+      background-color: #5865f2;
+      color: white;
+      font-weight: 600;
       padding: 10px 20px;
       border: none;
-      border-radius: 6px;
-      font-weight: bold;
+      border-radius: 8px;
       cursor: pointer;
-      transition: background-color 0.2s, transform 0.1s;
+      transition: background-color 0.2s;
+      flex-shrink: 0;
     }
-    .modal-btn:active {
-        transform: scale(0.98);
+    .send-button:hover {
+      background-color: #4752c4;
     }
-
-    .btn-cancel {
-      background-color: #40444b;
-      color: white;
+    .send-button:disabled {
+        background-color: #72767d;
+        cursor: not-allowed;
     }
-    .btn-cancel:hover {
-        background-color: #50545b;
+    
+    /* ------------------------------ */
+    /* MODAL DE ERROR (Para reemplazar alert()) */
+    /* ------------------------------ */
+    .modal-overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background-color: rgba(0, 0, 0, 0.75);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        z-index: 1000;
     }
-
-    .btn-primary {
-      background-color: #5865f2; 
-      color: white;
+    .modal-content {
+        background-color: #2f3136;
+        padding: 30px;
+        border-radius: 12px;
+        width: 90%;
+        max-width: 400px;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.5);
+        text-align: center;
     }
-    .btn-primary:hover {
+    .modal-content .icon {
+        color: #faa81a; /* Amarillo para advertencia */
+        font-size: 48px;
+        margin-bottom: 15px;
+    }
+    .modal-content h3 {
+        color: white;
+        font-size: 20px;
+        margin-bottom: 10px;
+    }
+    .modal-content p {
+        color: #dcddde;
+        margin-bottom: 25px;
+    }
+    .modal-button {
+        background-color: #5865f2;
+        color: white;
+        padding: 10px 20px;
+        border-radius: 6px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: background-color 0.2s;
+    }
+    .modal-button:hover {
         background-color: #4752c4;
     }
-
-    .btn-danger {
-        background-color: #f23f43; 
-        color: white;
-    }
-    .btn-danger:hover {
-        background-color: #c93337;
+    .hidden {
+        display: none !important;
     }
   </style>
 </head>
 <body>
-  
-  <div class="sidebar" id="sidebar">
-    <h2>Fendrox</h2>
+
+  <div class="app-container">
     
-    <!-- Panel de ID de Usuario -->
-    <div class="user-info-panel">
-        <h3>Tu ID:</h3>
-        <!-- El ID se actualiza dinámicamente con el ID real de Firebase -->
-        <div class="id-display" id="userId">Cargando ID...</div>
-    </div>
-    
-    <!-- Controles para iniciar un nuevo DM -->
-    <div class="dm-controls">
-        <div class="section-title">Enviar DM</div>
-        <input type="text" id="dmTargetId" placeholder="ID del usuario a contactar" />
-        <button onclick="startDM()">Abrir DM</button>
+    <!-- BARRA DE CANALES/CONTACTOS (SIDEBAR) -->
+    <div id="sidebar" class="sidebar">
+      <h2>Fendrox Móvil</h2>
+
+      <!-- Panel de Información del Usuario -->
+      <div class="user-info-panel">
+        <h3>Tu ID de Usuario (Para compartir)</h3>
+        <div id="user-id-display" class="id-display">Cargando...</div>
+      </div>
+
+      <!-- Sección de Canales (Mock Data) -->
+      <div class="flex-1 overflow-y-auto">
+        <h4 class="section-title">Canales de Equipo</h4>
+        <div id="channel-list">
+          <div class="channel-item active">
+            <span class="channel-icon">#</span> General
+          </div>
+          <div class="channel-item">
+            <span class="channel-icon">#</span> Proyectos
+          </div>
+        </div>
+
+        <!-- Sección de Mensajes Directos (Mock Data) -->
+        <h4 class="section-title">Mensajes Directos</h4>
+        <div id="dm-list">
+            <div class="contact-item">
+                <div class="avatar bg-green-500">M</div> Mike
+            </div>
+            <div class="contact-item">
+                <div class="avatar bg-red-500">A</div> Amy
+            </div>
+        </div>
+      </div>
     </div>
 
-    <div class="section-title">Contactos Recientes</div>
-    <div id="dmList" class="dm-list">
-        <!-- Lista de DMs se renderiza aquí -->
-    </div>
-
-  </div>
-  
-  
-  <!-- Overlay Móvil (para cerrar el sidebar al tocar fuera) -->
-    <div id="mobileOverlay" class="overlay-mobile" onclick="toggleSidebar()"></div>
-
+    <!-- CHAT PRINCIPAL -->
     <div class="chat">
-        <div class="chat-header" id="chatHeader">
-            <!-- Botón para mostrar el sidebar en móviles -->
-            <button class="menu-toggle-btn" onclick="toggleSidebar()">
-                <!-- Icono de Hamburguesa (Menú) -->
-                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                    <line x1="3" y1="12" x2="21" y2="12"></line>
-                    <line x1="3" y1="6" x2="21" y2="6"></line>
-                    <line x1="3" y1="18" x2="21" y2="18"></line>
-                </svg>
-            </button>
-            <!-- Etiqueta del chat activo -->
-            <span id="activeModeLabel">Conectando...</span>
+      <!-- Chat Header -->
+      <div class="p-4 border-b border-gray-700 flex items-center bg-[#202225] flex-shrink-0">
+        <h3 class="text-xl font-bold"># General (Chat Global)</h3>
+      </div>
+
+      <!-- Contenedor de Mensajes -->
+      <div id="messages-container" class="messages-container">
+        <div class="text-center text-gray-500 p-4" id="loading-indicator">
+          Conectando...
         </div>
-        
-        <div class="messages" id="messages">
-            <!-- Los mensajes se renderizan aquí -->
-        </div>
-        <div class="input-area">
-            <!-- Botón de subir imagen -->
-            <label for="imageInput">
-                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                    <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
-                    <circle cx="8.5" cy="8.5" r="1.5"></circle>
-                    <polyline points="21 15 16 10 5 21"></polyline>
-                </svg>
-            </label>
-            <input type="file" id="imageInput" accept="image/*" />
-            
-            <!-- Campo de texto para el mensaje -->
-            <input type="text" id="messageInput" placeholder="Escribe tu mensaje..." />
-            
-            <!-- Botón de enviar -->
-            <button onclick="sendMessage()" class="send-button" id="sendButton" disabled>
-                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                    <line x1="22" y1="2" x2="11" y2="13"></line><polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
-                </svg>
+        <!-- Los mensajes se insertarán aquí por JavaScript -->
+      </div>
+
+      <!-- Área de Input de Mensajes -->
+      <form id="message-form" class="message-input-area">
+        <div class="input-form-inner">
+            <input type="text" id="message-input" placeholder="Enviar mensaje al canal #general" autocomplete="off" />
+            <button type="submit" class="send-button" id="send-button">
+                Enviar
             </button>
         </div>
+      </form>
     </div>
+  </div>
 
-  
-    <!-- Modal Personalizado para alertas, confirmaciones y prompts -->
-    <div id="customModal" class="modal-overlay">
-        <div class="modal-content">
-            <div id="modalIcon" class="modal-icon-container">
-                <!-- Icono se inserta aquí -->
-            </div>
-            <div id="modalTitle" class="modal-title"></div>
-            <div id="modalMessage" class="modal-message"></div>
-            <input type="text" id="modalInput" class="modal-input" placeholder="Escribe aquí..." style="display:none;">
-            <div id="modalActions" class="modal-actions">
-                <!-- Botones se insertan aquí -->
-            </div>
-        </div>
+  <!-- MODAL DE ERROR (Para reemplazar alert() y mostrar el error de conexión) -->
+  <div id="system-modal" class="modal-overlay hidden">
+    <div class="modal-content">
+      <div class="icon">
+        <!-- Icono de advertencia (Inline SVG) -->
+        <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+      </div>
+      <h3 id="modal-title">Aviso</h3>
+      <p id="modal-message">Error de Conexión: No se pudo iniciar Firebase. Revisa la consola.</p>
+      <button id="modal-accept-button" class="modal-button">Aceptar</button>
     </div>
+  </div>
 
+  <!-- ------------------------------ -->
+  <!-- SCRIPTS DE FUNCIONALIDAD -->
+  <!-- ------------------------------ -->
+  <script>
+    // Function to show the custom error modal (used instead of alert())
+    function showSystemModal(title, message) {
+        document.getElementById('modal-title').textContent = title;
+        document.getElementById('modal-message').textContent = message;
+        document.getElementById('system-modal').classList.remove('hidden');
+    }
 
-    <script type="module">
-        // Importaciones del SDK modular (V9) de Firebase
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
-        import { getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-        import { getFirestore, collection, doc, query, orderBy, onSnapshot, addDoc, deleteDoc, serverTimestamp, setLogLevel } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
-        
-        // Habilitar logs de depuración
-        setLogLevel('debug');
+    document.getElementById('modal-accept-button').addEventListener('click', () => {
+        document.getElementById('system-modal').classList.add('hidden');
+    });
 
-        // --- Variables Globales Mandatorias ---
-        const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
-        const firebaseConfig = typeof __firebase_config !== 'undefined' ? JSON.parse(__firebase_config) : {};
-        const initialAuthToken = typeof __initial_auth_token !== 'undefined' ? __initial_auth_token : null;
-
-        let app;
-        let db;
-        let auth;
-        let userId = null;
-        let isAuthReady = false; 
-
-        // --- Variables de Estado de la Aplicación ---
-        const LOCAL_CLIENT_ID_KEY = 'fendrox_local_client_id_v2'; // Key para persistencia del ID local
-        const DM_CONTACTS_KEY_PREFIX = 'conclave_dm_contacts_'; 
-        const ALIASES_KEY = 'fendrox_aliases'; 
-
-        let currentDM = null; 
-        let aliases = JSON.parse(localStorage.getItem(ALIASES_KEY) || '{}');
-        let unsubscribeFromChat = null; 
-
-        
-        // --- LÓGICA DE FIREBASE Y AUTHENTICACIÓN ---
-
-        // Función para obtener o crear un ID de cliente persistente en localStorage
-        function getOrCreatePersistentId() {
-            let localId = localStorage.getItem(LOCAL_CLIENT_ID_KEY);
-            if (!localId || localId === 'null' || localId === 'undefined') {
-                localId = crypto.randomUUID();
-                localStorage.setItem(LOCAL_CLIENT_ID_KEY, localId);
-            }
-            return localId;
+    // Simple function to get a consistent avatar color based on the user's ID
+    function getColor(str) {
+        let hash = 0;
+        for (let i = 0; i < str.length; i++) {
+            hash = str.charCodeAt(i) + ((hash << 5) - hash);
         }
+        const color = Math.floor(Math.abs((Math.sin(hash) * 16777215)) % 16777216).toString(16);
+        return '#' + ('000000' + color).slice(-6);
+    }
+  </script>
 
+  <script type="module">
+    // Firebase imports
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+    import { 
+        getAuth, 
+        signInAnonymously, 
+        signInWithCustomToken, 
+        onAuthStateChanged 
+    } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+    import { 
+        getFirestore, 
+        collection, 
+        addDoc, 
+        onSnapshot, 
+        query, 
+        orderBy,
+        serverTimestamp,
+        setLogLevel
+    } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
-        async function initializeFirebase() {
-            try {
-                app = initializeApp(firebaseConfig);
-                db = getFirestore(app);
-                auth = getAuth(app);
-                
-                // 1. Manejo de Autenticación: Intentar usar el token de entorno, si no, usar anónimo.
-                // En GitHub Pages, initialAuthToken es null.
-                if (initialAuthToken) {
-                    await signInWithCustomToken(auth, initialAuthToken);
+    // Set Firestore log level to debug for troubleshooting
+    setLogLevel('Debug');
+
+    let db;
+    let auth;
+    let userId = 'loading...';
+    let userName = 'Anonimo';
+    let isAuthReady = false;
+
+    const messagesContainer = document.getElementById('messages-container');
+    const messageForm = document.getElementById('message-form');
+    const messageInput = document.getElementById('message-input');
+    const userIdDisplay = document.getElementById('user-id-display');
+    const sendButton = document.getElementById('send-button');
+    const loadingIndicator = document.getElementById('loading-indicator');
+
+    // --- 1. FIREBASE SETUP & AUTHENTICATION (The FIX) ---
+    
+    // Global variable setup (MANDATORY for Canvas)
+    const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
+    const firebaseConfig = JSON.parse(typeof __firebase_config !== 'undefined' ? __firebase_config : '{}');
+
+    if (Object.keys(firebaseConfig).length === 0) {
+        showSystemModal(
+            "Aviso (Error Local)", 
+            "La configuración de Firebase está vacía. No se puede conectar a la base de datos."
+        );
+        console.error("Firebase config is empty.");
+    } else {
+        try {
+            const app = initializeApp(firebaseConfig);
+            db = getFirestore(app);
+            auth = getAuth(app);
+            console.log("Firebase App and Services initialized.");
+            
+            // Set up authentication listener
+            onAuthStateChanged(auth, async (user) => {
+                if (user) {
+                    userId = user.uid;
+                    // Use a shortened ID for the name for a more chat-like feel
+                    userName = `User-${userId.substring(0, 4)}`; 
+                    userIdDisplay.textContent = userId;
+                    console.log(`User authenticated: ${userId}`);
+                    isAuthReady = true;
+                    loadingIndicator.classList.add('hidden');
+                    loadMessages(); 
                 } else {
-                    // Autenticación anónima para GitHub Pages. Este UID puede cambiar.
-                    await signInAnonymously(auth); 
-                }
-                
-                // 2. Esperar por el estado de Auth y establecer userId
-                onAuthStateChanged(auth, (user) => {
-                    if (user) {
-                        
-                        // ** CORRECCIÓN CLAVE PARA GITHUB PAGES **
-                        // Si NO tenemos el token de entorno (es decir, estamos en GitHub Pages)
-                        // forzamos el uso del ID persistente de localStorage, ignorando el UID volátil de Firebase.
-                        if (!initialAuthToken) {
-                            console.log("Usando ID local persistente para asegurar consistencia en entornos externos.");
-                            userId = getOrCreatePersistentId(); 
-                        } else {
-                            // Si sí hay token de entorno (vista previa de Google), confiamos en el UID real.
-                            userId = user.uid;
-                        }
-
-                        isAuthReady = true;
-                        
-                        // 3. Actualizar la interfaz
-                        document.getElementById('userId').textContent = userId;
-                        document.getElementById('activeModeLabel').textContent = 'Listo para chatear';
-                        document.getElementById('sendButton').disabled = false;
-
-                        // 4. Inicializar la aplicación solo después de tener el userId
-                        initializeAppLogic();
-                    } else {
-                        // Fallback extremo si no se pudo autenticar nada
-                        console.error("Usuario no autenticado. Usando ID local persistente forzado.");
-                        userId = getOrCreatePersistentId(); // Forzar uso de ID persistente
-                        isAuthReady = true;
-                        document.getElementById('userId').textContent = userId;
-                        initializeAppLogic();
-                    }
-                });
-
-            } catch (e) {
-                console.error("Error FATAL al inicializar Firebase:", e);
-                window.alert("Error de Conexión: No se pudo iniciar Firebase. Revisa la consola.");
-            }
-        }
-        
-        // Lógica de inicialización que depende de Auth
-        function initializeAppLogic() {
-            updateDMList();
-            const contacts = JSON.parse(localStorage.getItem(DM_CONTACTS_KEY_PREFIX + userId) || '[]');
-            if (contacts.length > 0) {
-                selectDM(contacts[0]); 
-            } else {
-                updateModeLabel();
-            }
-        }
-
-
-        // --- FUNCIONES AUXILIARES DE DATOS ---
-        
-        // Obtiene la colección base de mensajes (V9: usa paths correctos)
-        function getMessagesCollectionRef(targetId) {
-            if (!db || !userId) return null;
-
-            const sortedIds = [String(userId), String(targetId)].sort();
-            // La sala de chat se crea con el ID persistente del usuario (userId), asegurando que el chat
-            // se mantiene en la misma colección aunque el UID anónimo de Firebase cambie.
-            const chatRoomId = `${sortedIds[0]}_${sortedIds[1]}`;
-            
-            // Ruta MANDATORIA de Firestore para datos públicos colaborativos:
-            // /artifacts/{appId}/public/data/chats/{chatRoomId}/messages
-            return collection(db, 'artifacts', appId, 'public', 'data', 'chats', chatRoomId, 'messages');
-        }
-
-
-        // Genera las iniciales para el avatar
-        function getInitials(id) {
-            if (String(id) === String(userId)) return 'T'; // Tu
-            const alias = aliases[id] || `ID ${id}`;
-            return alias.charAt(0).toUpperCase();
-        }
-
-        // Obtiene el alias o el ID
-        function getAlias(id) {
-            return aliases[id] || `ID ${id}`;
-        }
-
-        // Guarda el alias en localStorage
-        function saveAlias(id, name) {
-            aliases[id] = name;
-            localStorage.setItem(ALIASES_KEY, JSON.stringify(aliases));
-        }
-
-        // Añade un ID a la lista de contactos recientes
-        function addContact(contactId) {
-            if (String(contactId) === String(userId)) return;
-            let contactsKey = DM_CONTACTS_KEY_PREFIX + userId;
-            let contacts = JSON.parse(localStorage.getItem(contactsKey) || '[]');
-            contactId = String(contactId);
-
-            const index = contacts.indexOf(contactId);
-            if (index > -1) {
-                contacts.splice(index, 1);
-            }
-            contacts.unshift(contactId);
-            
-            localStorage.setItem(contactsKey, JSON.stringify(contacts));
-        }
-
-
-        // --- LÓGICA DE UI Y RENDERIZADO (sin cambios mayores) ---
-
-        // Función de envío de mensaje con soporte para imágenes base64
-        async function sendMessage() {
-            const textInput = document.getElementById('messageInput');
-            const imageInput = document.getElementById('imageInput');
-            const text = textInput.value.trim();
-            const imageFile = imageInput.files[0];
-            const sendButton = document.getElementById('sendButton');
-
-            if (!text && !imageFile) return;
-            if (!currentDM) { window.alert('Debes abrir un DM primero.'); return; }
-            if (!db || !userId) { console.error("Firestore o Usuario no listos."); return; }
-            
-            sendButton.disabled = true; 
-            addContact(currentDM); 
-
-            const chatRef = getMessagesCollectionRef(currentDM);
-
-            const messageData = { 
-                sender: userId, 
-                text: text, 
-                timestamp: serverTimestamp() // V9
-            };
-
-            const saveMessageToFirebase = async (imageBase64 = null) => {
-                if (imageBase64) {
-                    messageData.image = imageBase64;
-                }
-
-                try {
-                    await addDoc(chatRef, messageData); // V9
-                    console.log("Mensaje enviado con éxito");
-                    textInput.value = '';
-                    imageInput.value = null; 
-                } catch (e) {
-                    console.error("Error al enviar el mensaje:", e);
-                    window.alert("Error al enviar el mensaje. Revisa tu conexión y las reglas de seguridad.");
-                } finally {
-                    sendButton.disabled = false;
-                }
-            };
-
-            if (imageFile) {
-                const reader = new FileReader();
-                reader.onload = function(e) { saveMessageToFirebase(e.target.result); };
-                reader.onerror = function(e) { 
-                    console.error("Error al leer la imagen:", e);
-                    window.alert("Error al cargar la imagen.");
-                    sendButton.disabled = false;
-                };
-                reader.readAsDataURL(imageFile);
-            } else {
-                saveMessageToFirebase();
-            }
-        } 
-
-        // Inicia o cambia a un DM específico
-        function selectDM(contactId) {
-            if (!db || !userId) return console.error("Firestore o usuario no listos.");
-            
-            currentDM = String(contactId);
-            updateModeLabel();
-            addContact(currentDM); 
-            updateDMList(); 
-            
-
-            if (unsubscribeFromChat) {
-                unsubscribeFromChat();
-            }
-
-            const chatRef = getMessagesCollectionRef(currentDM);
-            const q = query(chatRef, orderBy('timestamp')); // V9
-
-            // Listener en tiempo real (V9)
-            unsubscribeFromChat = onSnapshot(q, (snapshot) => {
-                const msgs = [];
-                snapshot.forEach(doc => {
-                    const data = doc.data();
-                    data.id = doc.id; 
-                    msgs.push(data);
-                });
-                renderMessages(msgs);
-            }, error => {
-                console.error("Error al escuchar mensajes. Revisa las reglas de seguridad:", error);
-                document.getElementById('messages').innerHTML = '<div style="text-align:center; color:#f23f43; padding:20px;">Error al cargar mensajes. Verifica la conexión y los permisos.</div>';
-            });
-
-            // Cerrar sidebar en móvil al seleccionar chat
-            if (window.innerWidth <= 768) {
-                toggleSidebar();
-            }
-        }
-        
-        // Función para eliminar un mensaje propio de Firestore
-        function deleteOwnMessage(messageId) {
-            showCustomModal(
-                'confirm',
-                'Eliminar Mensaje',
-                '¿Estás seguro de que quieres eliminar este mensaje? Esta acción es permanente.',
-                async (confirmed) => {
-                    if (!confirmed) return;
-
-                    if (!currentDM || !db) {
-                        window.alert("Error: Chat no seleccionado o Firestore no inicializado.");
-                        return;
-                    }
-
+                    console.log("No user found. Attempting sign-in...");
                     try {
-                        const chatRef = getMessagesCollectionRef(currentDM);
-                        // El deleteDoc requiere una referencia de Documento
-                        const msgRef = doc(chatRef, messageId); 
-                        await deleteDoc(msgRef); 
-                        console.log("Mensaje eliminado con éxito:", messageId);
+                         const initialAuthToken = typeof __initial_auth_token !== 'undefined' ? __initial_auth_token : null;
+                         if (initialAuthToken) {
+                            // Sign in using the provided custom token
+                            await signInWithCustomToken(auth, initialAuthToken);
+                         } else {
+                            // Fallback to anonymous sign-in
+                            await signInAnonymously(auth);
+                         }
                     } catch (error) {
-                        console.error("Error al eliminar el mensaje:", error);
-                        window.alert("Error al eliminar el mensaje. Revisa las Reglas de Seguridad para la operación 'delete'.");
+                        console.error("Error signing in:", error);
+                        loadingIndicator.textContent = 'Error de conexión. Fallo de autenticación.';
+                        showSystemModal(
+                            "Error de Autenticación", 
+                            "Fallo al iniciar sesión en Firebase. Detalles en la consola."
+                        );
                     }
                 }
+            });
+
+        } catch (e) {
+            console.error("Fatal Error during Firebase Initialization:", e);
+             showSystemModal(
+                "Error de Conexión", 
+                "No se pudo iniciar Firebase. Revisa la consola."
             );
         }
+    }
 
-        // --- FUNCIONES MODAL (Solo movidas fuera para ser globales) ---
-        const TRASH_SVG = `<svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#f23f43" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/></svg>`;
-        const PENCIL_SVG = `<svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#5865f2" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/></svg>`;
-        const ALERT_SVG = `<svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#ffc600" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>`;
 
-        function showCustomModal(type, title, message, callback, defaultValue = '') {
-            const modal = document.getElementById('customModal');
-            const modalTitle = document.getElementById('modalTitle');
-            const modalMessage = document.getElementById('modalMessage');
-            const modalInput = document.getElementById('modalInput');
-            const modalActions = document.getElementById('modalActions');
-            const modalIcon = document.getElementById('modalIcon');
+    // --- 2. MESSAGE LOADING (REAL-TIME) ---
 
-            modalTitle.textContent = title;
-            modalMessage.textContent = message;
-            modalActions.innerHTML = '';
-            modalInput.style.display = 'none';
-            modalIcon.innerHTML = '';
+    // Define the public collection path (MANDATORY structure)
+    const getCollectionRef = () => {
+        return collection(db, `artifacts/${appId}/public/data/chat_messages`);
+    };
 
-            if (type === 'alert') {
-                modalIcon.innerHTML = ALERT_SVG; 
-                const okButton = document.createElement('button');
-                okButton.className = 'modal-btn btn-primary';
-                okButton.textContent = 'Aceptar';
-                okButton.onclick = () => { modal.classList.remove('active'); if (callback) callback(true); };
-                modalActions.appendChild(okButton);
-            } else if (type === 'confirm') {
-                modalIcon.innerHTML = TRASH_SVG; 
-                const cancelButton = document.createElement('button');
-                cancelButton.className = 'modal-btn btn-cancel';
-                cancelButton.textContent = 'Cancelar';
-                cancelButton.onclick = () => { modal.classList.remove('active'); if (callback) callback(false); };
-                const confirmButton = document.createElement('button');
-                confirmButton.className = 'modal-btn btn-danger';
-                confirmButton.textContent = 'Eliminar';
-                confirmButton.onclick = () => { modal.classList.remove('active'); if (callback) callback(true); };
-                modalActions.appendChild(cancelButton);
-                modalActions.appendChild(confirmButton);
-            } else if (type === 'input') {
-                modalIcon.innerHTML = PENCIL_SVG; 
-                modalInput.style.display = 'block';
-                modalInput.value = defaultValue;
-                modalInput.focus();
-                const cancelButton = document.createElement('button');
-                cancelButton.className = 'modal-btn btn-cancel';
-                cancelButton.textContent = 'Cancelar';
-                cancelButton.onclick = () => { modal.classList.remove('active'); if (callback) callback(null); };
-                const saveButton = document.createElement('button');
-                saveButton.className = 'modal-btn btn-primary';
-                saveButton.textContent = 'Guardar';
-                saveButton.onclick = () => { modal.classList.remove('active'); if (callback) callback(modalInput.value); };
-                modalInput.onkeypress = (e) => {
-                    if (e.key === 'Enter') saveButton.click();
-                };
-                modalActions.appendChild(cancelButton);
-                modalActions.appendChild(saveButton);
+    function loadMessages() {
+        if (!isAuthReady || !db) {
+            console.warn("Firestore not ready or not authenticated yet. Retrying on next auth change.");
+            return;
+        }
+
+        // Query messages ordered by timestamp
+        const q = query(getCollectionRef(), orderBy('timestamp', 'asc'));
+
+        // Listen for real-time updates
+        onSnapshot(q, (snapshot) => {
+            messagesContainer.innerHTML = ''; // Clear and redraw
+            
+            if (snapshot.docs.length === 0) {
+              messagesContainer.innerHTML = '<div class="text-center text-gray-500 p-4">¡Sé el primero en enviar un mensaje!</div>';
             }
-            modal.classList.add('active');
-        }
 
-        window.alert = (message) => { showCustomModal('alert', 'Aviso', message); };
-
-        // --- Funciones de UI expuestas globalmente ---
-
-        window.toggleSidebar = function() {
-            const sidebar = document.getElementById('sidebar');
-            const overlay = document.getElementById('mobileOverlay');
-            const isActive = sidebar.classList.toggle('active');
-            overlay.classList.toggle('active', isActive);
-            document.body.style.overflow = isActive && window.innerWidth <= 768 ? 'hidden' : 'hidden'; 
-            if (!isActive) { document.body.style.overflow = 'hidden'; }
-        }
-
-        window.startDM = function() {
-            const targetId = document.getElementById('dmTargetId').value.trim();
-            if (!targetId || String(targetId) === String(userId)) {
-                window.alert('ID de usuario inválido o es tu propio ID.');
-                return;
-            }
-            selectDM(targetId);
-            document.getElementById('dmTargetId').value = ''; 
-        }
-
-        window.setAlias = function(id) {
-            const currentName = getAlias(id);
-            showCustomModal(
-                'input', 
-                'Editar Alias', 
-                `Ingresa un nuevo nombre/alias para el usuario ${id}:`, 
-                (newAlias) => {
-                    if (newAlias && newAlias.trim() !== "" && newAlias !== currentName) {
-                        saveAlias(id, newAlias.trim());
-                        updateDMList(); 
-                        if (String(currentDM) === String(id)) { updateModeLabel(); }
-                    }
-                }, 
-                currentName 
-            );
-        }
-
-        window.removeContact = function(contactId) {
-            const alias = getAlias(contactId);
-            showCustomModal(
-                'confirm',
-                'Eliminar Contacto',
-                `¿Estás seguro de que quieres eliminar a ${alias} (${contactId}) de tus contactos?`,
-                (confirmed) => {
-                    if (!confirmed) return;
-                    
-                    let contactsKey = DM_CONTACTS_KEY_PREFIX + userId;
-                    let contacts = JSON.parse(localStorage.getItem(contactsKey) || '[]');
-                    
-                    const index = contacts.indexOf(String(contactId));
-                    if (index > -1) {
-                        contacts.splice(index, 1);
-                        localStorage.setItem(contactsKey, JSON.stringify(contacts));
-                    }
-                    
-                    if (String(currentDM) === String(contactId)) {
-                        currentDM = null;
-                        if (unsubscribeFromChat) { unsubscribeFromChat(); document.getElementById('messages').innerHTML = ''; }
-                        updateModeLabel();
-                    }
-                    updateDMList();
+            snapshot.docs.forEach(doc => {
+                const data = doc.data();
+                if (data) {
+                    displayMessage(data);
                 }
+            });
+            // Scroll to the bottom of the chat after updates
+            messagesContainer.scrollTop = messagesContainer.scrollHeight;
+        }, (error) => {
+            console.error("Error loading messages from Firestore:", error);
+            showSystemModal(
+                "Error de Carga", 
+                "Fallo al cargar los mensajes en tiempo real. Revisa la consola."
             );
+        });
+    }
+
+    function displayMessage(message) {
+        // Format time
+        const date = message.timestamp ? message.timestamp.toDate() : new Date();
+        const time = date.toLocaleTimeString('es-ES', {hour: '2-digit', minute:'2-digit'});
+        
+        const authorId = message.userId || 'system';
+        const authorName = message.userName || 'Sistema';
+        const initial = authorName.charAt(0).toUpperCase();
+        const bgColor = getColor(authorId);
+
+        const messageHtml = `
+            <div class="message">
+                <div class="avatar" style="background-color: ${bgColor};">${initial}</div>
+                <div class="message-content">
+                    <div class="message-header">
+                        <span class="message-author" style="color: ${bgColor};" title="ID: ${authorId}">${authorName}</span>
+                        <span class="message-time">${time}</span>
+                    </div>
+                    <div class="message-text">${message.text}</div>
+                </div>
+            </div>
+        `;
+        messagesContainer.insertAdjacentHTML('beforeend', messageHtml);
+    }
+
+
+    // --- 3. SEND MESSAGE ---
+
+    messageForm.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const text = messageInput.value.trim();
+
+        if (!isAuthReady) {
+            showSystemModal("Aviso", "Aún no estás conectado. Espera un momento.");
+            return;
         }
         
-        window.sendMessage = sendMessage;
-        window.deleteOwnMessage = deleteOwnMessage; // expuesto para uso en renderMessages
-
-        // Funciones de renderizado
-        function updateModeLabel() {
-            const label = document.getElementById('activeModeLabel');
-            let text;
-            if (currentDM) {
-                const alias = getAlias(currentDM);
-                text = `DM con ${alias} (${currentDM})`;
-            } else {
-                text = 'Ningún DM abierto';
-            }
-            label.textContent = text;
-            document.querySelectorAll('.dm-item').forEach(item => {
-                item.classList.remove('active');
-                if (item.dataset.id === currentDM) {
-                    item.classList.add('active');
-                }
-            });
-        }
-
-        function updateDMList() {
-            const listContainer = document.getElementById('dmList');
-            listContainer.innerHTML = ''; 
-            const contactsKey = DM_CONTACTS_KEY_PREFIX + userId;
-            const contacts = JSON.parse(localStorage.getItem(contactsKey) || '[]');
-            for (const contactId of contacts) {
-                if (String(contactId) === String(userId)) continue; 
-                const alias = getAlias(contactId);
-                const initials = getInitials(contactId);
-
-                const dmItem = document.createElement('div');
-                dmItem.className = 'dm-item';
-                dmItem.dataset.id = contactId;
-                
-                const avatar = document.createElement('div');
-                avatar.className = 'avatar';
-                avatar.textContent = initials;
-                
-                const textContainer = document.createElement('div');
-                textContainer.style.flexGrow = '1';
-                textContainer.innerHTML = `<div style="color:white; font-weight:600; max-width: 150px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">${alias}</div><div class="id-display">ID: ${contactId}</div>`;
-
-                const actionsContainer = document.createElement('div');
-                actionsContainer.className = 'actions';
-
-                const editButton = document.createElement('button');
-                editButton.className = 'alias-edit-btn';
-                editButton.title = 'Editar Alias';
-                editButton.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/></svg>`; 
-                editButton.onclick = (e) => { e.stopPropagation(); window.setAlias(contactId); };
-                actionsContainer.appendChild(editButton);
-                
-                const removeButton = document.createElement('button');
-                removeButton.className = 'remove-contact-btn';
-                removeButton.title = 'Eliminar Contacto';
-                removeButton.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/></svg>`;
-                removeButton.onclick = (e) => { e.stopPropagation(); window.removeContact(contactId); };
-                actionsContainer.appendChild(removeButton);
-
-                dmItem.appendChild(avatar);
-                dmItem.appendChild(textContainer);
-                dmItem.appendChild(actionsContainer);
-
-                dmItem.onclick = () => { selectDM(contactId); };
-
-                if (String(contactId) === String(currentDM)) { dmItem.classList.add('active'); }
-                listContainer.appendChild(dmItem);
+        if (text) {
+            sendButton.disabled = true;
+            try {
+                // Add the message to the public collection
+                await addDoc(getCollectionRef(), {
+                    text: text,
+                    timestamp: serverTimestamp(),
+                    userId: userId,
+                    userName: userName,
+                });
+                messageInput.value = ''; // Clear input on success
+            } catch (error) {
+                console.error("Error sending message:", error);
+                 showSystemModal(
+                    "Error de Envío", 
+                    "Fallo al enviar el mensaje. Revisa la consola."
+                );
+            } finally {
+                sendButton.disabled = false;
             }
         }
+    });
 
-        function renderMessages(msgs) {
-            const container = document.getElementById('messages');
-            const isScrolledToBottom = container.scrollHeight - container.clientHeight <= container.scrollTop + 10; // +10 de margen
-            
-            container.innerHTML = '';
-            const fragment = document.createDocumentFragment();
-
-            for (const msg of msgs) {
-                const div = document.createElement('div');
-                div.className = 'message';
-                
-                const isOwnMessage = String(msg.sender) === String(userId);
-                
-                const initials = isOwnMessage ? 'T' : getInitials(msg.sender);
-                const avatar = document.createElement('div');
-                avatar.className = 'avatar';
-                avatar.textContent = initials;
-                div.appendChild(avatar);
-
-                const contentContainer = document.createElement('div');
-                contentContainer.className = 'message-content';
-
-                const info = document.createElement('div');
-                info.className = 'message-info';
-                
-                const senderName = document.createElement('span');
-                senderName.className = 'sender-name';
-                senderName.textContent = isOwnMessage ? 'Tú' : getAlias(msg.sender);
-                info.appendChild(senderName);
-
-                const time = document.createElement('span');
-                time.className = 'timestamp';
-                
-                // Los Timestamps de V9 tienen toDate()
-                const date = msg.timestamp && msg.timestamp.toDate ? new Date(msg.timestamp.toDate()) : new Date(); 
-                time.textContent = date.toLocaleTimeString('es-ES', {hour: '2-digit', minute:'2-digit', second:'2-digit', hour12: false}) + ' ' + date.toLocaleDateString('es-ES');
-                info.appendChild(time);
-                
-                contentContainer.appendChild(info);
-
-                if (msg.text) {
-                    const textContent = document.createElement('div');
-                    textContent.className = 'message-text';
-                    textContent.textContent = msg.text;
-                    contentContainer.appendChild(textContent);
-                }
-
-                if (msg.image) {
-                    const img = document.createElement('img');
-                    img.src = msg.image;
-                    img.className = 'chat-image';
-                    contentContainer.appendChild(img);
-                }
-
-                div.appendChild(contentContainer);
-
-                if (isOwnMessage && msg.id) { 
-                    const deleteButton = document.createElement('button');
-                    deleteButton.className = 'delete-message-btn';
-                    deleteButton.title = 'Eliminar este mensaje';
-                    deleteButton.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/></svg>`;
-                    // Usar window.deleteOwnMessage
-                    deleteButton.onclick = (e) => { e.stopPropagation(); window.deleteOwnMessage(msg.id); };
-                    div.appendChild(deleteButton);
-                }
-
-                fragment.appendChild(div);
-            }
-            container.appendChild(fragment);
-            
-            // Scroll al final si el usuario estaba cerca del final
-            if (isScrolledToBottom || container.children.length < 5) {
-                container.scrollTop = container.scrollHeight;
-            }
+    // Handle pressing Enter inside the input field
+    messageInput.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter' && !e.shiftKey) {
+            e.preventDefault();
+            messageForm.dispatchEvent(new Event('submit'));
         }
+    });
 
-
-        // --- INICIALIZACIÓN FINAL ---
-
-        // Listener para la tecla Enter
-        document.addEventListener('DOMContentLoaded', () => {
-            const messageInput = document.getElementById('messageInput');
-            const imageInput = document.getElementById('imageInput');
-
-            messageInput.addEventListener('keypress', function(e) {
-                if (e.key === 'Enter') {
-                    e.preventDefault(); 
-                    sendMessage();
-                }
-            });
-
-            imageInput.addEventListener('change', function() {
-                if (this.files.length > 0 && !messageInput.value.trim()) {
-                    sendMessage();
-                }
-            });
-            
-            // Iniciar Firebase después de que el DOM esté cargado
-            initializeFirebase();
-        });
-    </script>
+    // Set initial focus
+    window.onload = () => {
+        messageInput.focus();
+    }
+  </script>
 </body>
 </html>
